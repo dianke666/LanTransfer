@@ -6,9 +6,10 @@ import LanTransferProtocol
 import Network
 
 /// iOS 本地网络接口监视器：`NWPathMonitor` 事件触发 + `getifaddrs()` 枚举，严格剔除蜂窝（`pdp_ip*`）、VPN（`utun*`）及 Apple 内部虚拟网卡（`awdl0`/`llw0`）。
-public actor IosNetworkMonitor: NetworkMonitor {
-    public nonisolated let interfacesStream: AsyncStream<[LocalInterface]>
+public final class IosNetworkMonitor: NetworkMonitor, @unchecked Sendable {
+    public let interfacesStream: AsyncStream<[LocalInterface]>
 
+    private let lock = NSLock()
     private let continuation: AsyncStream<[LocalInterface]>.Continuation
     private let pathMonitor = NWPathMonitor()
     private let monitorQueue = DispatchQueue(label: "com.lantransfer.netmonitor", qos: .utility)
@@ -26,44 +27,60 @@ public actor IosNetworkMonitor: NetworkMonitor {
     public func start() {
         refreshNow()
         pathMonitor.pathUpdateHandler = { [weak self] _ in
-            guard let monitor = self else { return }
-            Task { await monitor.refreshNow() }
+            self?.refreshNow()
         }
         pathMonitor.start(queue: monitorQueue)
 
-        pollTask?.cancel()
-        pollTask = Task { [weak self] in
+        let task = Task { [weak self] in
             while !Task.isCancelled {
-                let fast = await self?.fastPolling ?? false
-                let ms: UInt64 = fast ? 1_000 : 2_000
+                guard let monitor = self else { break }
+                let ms: UInt64 = monitor.isFastPolling() ? 1_000 : 2_000
                 do {
                     try await Task.sleep(nanoseconds: ms * 1_000_000)
                 } catch {
                     break
                 }
-                await self?.refreshNow()
+                monitor.refreshNow()
             }
+        }
+        lock.withLock {
+            pollTask?.cancel()
+            pollTask = task
         }
     }
 
     public func stop() {
-        pollTask?.cancel()
-        pollTask = nil
+        let oldTask: Task<Void, Never>? = lock.withLock {
+            let t = pollTask
+            pollTask = nil
+            return t
+        }
+        oldTask?.cancel()
         pathMonitor.cancel()
     }
 
-    public func currentInterfaces() -> [LocalInterface] {
-        current
+    public func currentInterfaces() async -> [LocalInterface] {
+        lock.withLock { current }
     }
 
-    public func setFastPolling(_ enabled: Bool) {
-        fastPolling = enabled
+    public func setFastPolling(_ enabled: Bool) async {
+        lock.withLock { fastPolling = enabled }
+    }
+
+    private func isFastPolling() -> Bool {
+        lock.withLock { fastPolling }
     }
 
     private func refreshNow() {
         let next = Self.enumerateInterfaces()
-        if next != current {
-            current = next
+        let changed: Bool = lock.withLock {
+            if next != current {
+                current = next
+                return true
+            }
+            return false
+        }
+        if changed {
             continuation.yield(next)
         }
     }
@@ -91,7 +108,8 @@ public actor IosNetworkMonitor: NetworkMonitor {
                 continue
             }
 
-            let name = String(cString: ptr.pointee.ifa_name)
+            guard let ifaName = ptr.pointee.ifa_name else { continue }
+            let name = String(cString: ifaName)
             guard isAllowedInterfaceName(name) else { continue }
 
             let sin = addrPtr.withMemoryRebound(to: sockaddr_in.self, capacity: 1) { $0.pointee }

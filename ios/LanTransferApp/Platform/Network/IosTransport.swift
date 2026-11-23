@@ -155,9 +155,23 @@ private final class NwTcpConn: TcpConn, @unchecked Sendable {
         self.remote = remote
     }
 
+    init(inboundConnection: NWConnection, listenPort: Int) {
+        self.connection = inboundConnection
+        self.local = SocketAddr(ip: Ipv4(0, 0, 0, 0), port: listenPort)
+        if case .hostPort(let host, let port) = inboundConnection.endpoint,
+           case .ipv4(let v4) = host {
+            let bytes = [UInt8](v4.rawValue)
+            if bytes.count == 4 {
+                self.remote = SocketAddr(ip: Ipv4(bytes[0], bytes[1], bytes[2], bytes[3]), port: Int(port.rawValue))
+                return
+            }
+        }
+        self.remote = SocketAddr(ip: Ipv4(0, 0, 0, 0), port: 0)
+    }
+
     func read(maxBytes: Int) async -> Data? {
         await withCheckedContinuation { continuation in
-            connection.receive(minimumIncompleteLength: 1, maximumLength: maxBytes) { content, _, isComplete, error in
+            self.connection.receive(minimumIncompleteLength: 1, maximumLength: maxBytes) { content, _, isComplete, error in
                 if let data = content, !data.isEmpty {
                     continuation.resume(returning: data)
                 } else if isComplete || error != nil {
@@ -172,20 +186,21 @@ private final class NwTcpConn: TcpConn, @unchecked Sendable {
     func write(_ data: Data) async -> Bool {
         if data.isEmpty { return true }
         return await withCheckedContinuation { continuation in
-            connection.send(content: data, completion: .contentProcessed { error in
+            self.connection.send(content: data, completion: .contentProcessed { error in
                 continuation.resume(returning: error == nil)
             })
         }
     }
 
     func close() async {
-        connection.cancel()
+        self.connection.cancel()
     }
 }
 
-/// NWListener 封装为引擎 `TcpListener` 端口。
-private actor NwTcpListener: TcpListener {
-    nonisolated let port: Int
+/// NWListener 封装为引擎 `TcpListener` 端口（使用 `NSLock` 避免非 `Sendable` `NWListener` 跨越 actor 隔离域）。
+private final class NwTcpListener: TcpListener, @unchecked Sendable {
+    let port: Int
+    private let lock = NSLock()
     private let listener: NWListener
     private let queue: DispatchQueue
     private var incoming: [any TcpConn] = []
@@ -220,7 +235,7 @@ private actor NwTcpListener: TcpListener {
         }
         guard let port = boundPort, port > 0 else { return nil }
         let wrapper = NwTcpListener(listener: listenerBox.value, port: port, queue: queue)
-        await wrapper.attachAcceptHandler()
+        wrapper.attachAcceptHandler()
         return wrapper
     }
 
@@ -233,54 +248,70 @@ private actor NwTcpListener: TcpListener {
                 return
             }
             nwConn.start(queue: q)
-            let remoteAddr = Self.extractRemote(nwConn)
-            let localAddr = SocketAddr(ip: Ipv4(0, 0, 0, 0), port: listenPort)
-            let tcp = NwTcpConn(connection: nwConn, local: localAddr, remote: remoteAddr)
-            Task { await wrapper.enqueue(tcp) }
+            let tcp = NwTcpConn(inboundConnection: nwConn, listenPort: listenPort)
+            wrapper.enqueue(tcp)
         }
     }
 
     private func enqueue(_ conn: any TcpConn) {
-        guard !closed else {
-            Task { await conn.close() }
-            return
+        enum Action {
+            case resume(CheckedContinuation<(any TcpConn)?, Never>)
+            case buffered
+            case reject
         }
-        if let w = waiter {
-            waiter = nil
-            w.resume(returning: conn)
-        } else {
+        let action: Action = lock.withLock {
+            guard !closed else { return .reject }
+            if let w = waiter {
+                waiter = nil
+                return .resume(w)
+            }
             incoming.append(conn)
+            return .buffered
+        }
+        switch action {
+        case .resume(let w):
+            w.resume(returning: conn)
+        case .buffered:
+            break
+        case .reject:
+            Task { await conn.close() }
         }
     }
 
     func accept() async -> (any TcpConn)? {
-        if !incoming.isEmpty {
-            return incoming.removeFirst()
-        }
-        if closed { return nil }
-        return await withCheckedContinuation { cont in
-            self.waiter = cont
-        }
-    }
-
-    func close() {
-        closed = true
-        listener.cancel()
-        if let w = waiter {
-            waiter = nil
-            w.resume(returning: nil)
-        }
-    }
-
-    private static func extractRemote(_ conn: NWConnection) -> SocketAddr {
-        if case .hostPort(let host, let port) = conn.endpoint,
-           case .ipv4(let v4) = host {
-            let bytes = [UInt8](v4.rawValue)
-            if bytes.count == 4 {
-                return SocketAddr(ip: Ipv4(bytes[0], bytes[1], bytes[2], bytes[3]), port: Int(port.rawValue))
+        await withCheckedContinuation { cont in
+            enum Immediate {
+                case conn(any TcpConn)
+                case eof
+                case wait
+            }
+            let result: Immediate = lock.withLock {
+                if !incoming.isEmpty {
+                    return .conn(incoming.removeFirst())
+                }
+                if closed {
+                    return .eof
+                }
+                waiter = cont
+                return .wait
+            }
+            switch result {
+            case .conn(let c): cont.resume(returning: c)
+            case .eof: cont.resume(returning: nil)
+            case .wait: break
             }
         }
-        return SocketAddr(ip: Ipv4(0, 0, 0, 0), port: 0)
+    }
+
+    func close() async {
+        let pending: CheckedContinuation<(any TcpConn)?, Never>? = lock.withLock {
+            closed = true
+            let w = waiter
+            waiter = nil
+            return w
+        }
+        listener.cancel()
+        pending?.resume(returning: nil)
     }
 }
 

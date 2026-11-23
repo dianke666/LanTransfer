@@ -6,23 +6,28 @@ import SQLite3
 
 private let sqliteTransient = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
 
-private final class SqliteHandle: @unchecked Sendable {
-    let ptr: OpaquePointer
-    init(_ ptr: OpaquePointer) { self.ptr = ptr }
-    deinit { sqlite3_close(ptr) }
-}
-
 /// 原生 libsqlite3 M2 持久化引擎（零第三方依赖，WAL 模式，与 Android Room / Windows SQLite 共用相同 6 表 Schema）。
-public actor SqliteDatabase: TrustStore, HistoryStore, TaskStore {
+/// 使用 `NSLock` 保护连接（避免阻塞 Swift 并发协作线程池，并彻底规避 `OpaquePointer` 跨 actor 隔离域检查）。
+public final class SqliteDatabase: TrustStore, HistoryStore, TaskStore, @unchecked Sendable {
     private static let currentSchemaVersion: Int32 = 1
     private static let nextHistorySeqKey = "next_history_seq"
 
+    private let lock = NSLock()
     private let dbURL: URL
-    private var dbHandle: SqliteHandle?
+    private var dbHandle: OpaquePointer?
     private var openError: String?
 
     public init(url: URL = AppGroupConfig.databaseURL()) {
         self.dbURL = url
+    }
+
+    deinit {
+        lock.withLock {
+            if let db = dbHandle {
+                sqlite3_close(db)
+                dbHandle = nil
+            }
+        }
     }
 
     /// 供 Share Extension 只读查询已信任设备列表，避免与主 App 争用写锁。
@@ -39,8 +44,8 @@ public actor SqliteDatabase: TrustStore, HistoryStore, TaskStore {
         return queryTrustedDevices(db: db)
     }
 
-    private func ensureOpen() -> OpaquePointer? {
-        if let dbHandle { return dbHandle.ptr }
+    private func ensureOpenLocked() -> OpaquePointer? {
+        if let dbHandle { return dbHandle }
         try? FileManager.default.createDirectory(at: dbURL.deletingLastPathComponent(), withIntermediateDirectories: true)
         var handle: OpaquePointer?
         let flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX
@@ -71,7 +76,7 @@ public actor SqliteDatabase: TrustStore, HistoryStore, TaskStore {
             _ = exec(conn, "PRAGMA user_version = \(Self.currentSchemaVersion);")
         }
         _ = exec(conn, "INSERT OR IGNORE INTO schema_meta (key, value) VALUES ('\(Self.nextHistorySeqKey)', 1);")
-        self.dbHandle = SqliteHandle(conn)
+        self.dbHandle = conn
         self.openError = nil
         return conn
     }
@@ -87,165 +92,185 @@ public actor SqliteDatabase: TrustStore, HistoryStore, TaskStore {
     // MARK: - TrustStore
 
     public func all() -> [TrustedDevice] {
-        guard let db = ensureOpen() else { return [] }
-        return Self.queryTrustedDevices(db: db)
+        lock.withLock {
+            guard let db = ensureOpenLocked() else { return [] }
+            return Self.queryTrustedDevices(db: db)
+        }
     }
 
     public func get(_ id: DeviceId) -> TrustedDevice? {
-        guard let db = ensureOpen() else { return nil }
-        let sql = "SELECT device_id, display_name, device_type, public_key, auto_accept, paired_at, last_ip, last_port FROM trusted_device WHERE device_id = ?;"
-        var stmt: OpaquePointer?
-        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK, let stmt else { return nil }
-        defer { sqlite3_finalize(stmt) }
-        bindBlob(stmt, 1, id.bytes)
-        guard sqlite3_step(stmt) == SQLITE_ROW else { return nil }
-        return Self.readTrustedRow(stmt)
+        lock.withLock {
+            guard let db = ensureOpenLocked() else { return nil }
+            let sql = "SELECT device_id, display_name, device_type, public_key, auto_accept, paired_at, last_ip, last_port FROM trusted_device WHERE device_id = ?;"
+            var stmt: OpaquePointer?
+            guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK, let stmt else { return nil }
+            defer { sqlite3_finalize(stmt) }
+            bindBlob(stmt, 1, id.bytes)
+            guard sqlite3_step(stmt) == SQLITE_ROW else { return nil }
+            return Self.readTrustedRow(stmt)
+        }
     }
 
     public func upsert(_ device: TrustedDevice) -> StoreResult {
-        guard let db = ensureOpen() else { return .failed(detail: openError ?? "db unavailable") }
-        let sql = """
-        INSERT OR REPLACE INTO trusted_device
-          (device_id, display_name, device_type, public_key, auto_accept, paired_at, last_ip, last_port)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?);
-        """
-        var stmt: OpaquePointer?
-        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK, let stmt else {
-            return .failed(detail: lastError(db))
+        lock.withLock {
+            guard let db = ensureOpenLocked() else { return .failed(detail: openError ?? "db unavailable") }
+            let sql = """
+            INSERT OR REPLACE INTO trusted_device
+              (device_id, display_name, device_type, public_key, auto_accept, paired_at, last_ip, last_port)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+            """
+            var stmt: OpaquePointer?
+            guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK, let stmt else {
+                return .failed(detail: lastError(db))
+            }
+            defer { sqlite3_finalize(stmt) }
+            bindBlob(stmt, 1, device.deviceId.bytes)
+            bindText(stmt, 2, device.displayName)
+            sqlite3_bind_int(stmt, 3, Int32(device.deviceType.rawValue))
+            bindBlob(stmt, 4, device.publicKey)
+            sqlite3_bind_int(stmt, 5, device.autoAccept ? 1 : 0)
+            sqlite3_bind_int64(stmt, 6, device.pairedAtUtcMs)
+            if let ip = device.lastAddress {
+                sqlite3_bind_int64(stmt, 7, Int64(ip.rawValue))
+            } else {
+                sqlite3_bind_null(stmt, 7)
+            }
+            if let port = device.lastPort {
+                sqlite3_bind_int(stmt, 8, Int32(port))
+            } else {
+                sqlite3_bind_null(stmt, 8)
+            }
+            return sqlite3_step(stmt) == SQLITE_DONE ? .ok : .failed(detail: lastError(db))
         }
-        defer { sqlite3_finalize(stmt) }
-        bindBlob(stmt, 1, device.deviceId.bytes)
-        bindText(stmt, 2, device.displayName)
-        sqlite3_bind_int(stmt, 3, Int32(device.deviceType.rawValue))
-        bindBlob(stmt, 4, device.publicKey)
-        sqlite3_bind_int(stmt, 5, device.autoAccept ? 1 : 0)
-        sqlite3_bind_int64(stmt, 6, device.pairedAtUtcMs)
-        if let ip = device.lastAddress {
-            sqlite3_bind_int64(stmt, 7, Int64(ip.rawValue))
-        } else {
-            sqlite3_bind_null(stmt, 7)
-        }
-        if let port = device.lastPort {
-            sqlite3_bind_int(stmt, 8, Int32(port))
-        } else {
-            sqlite3_bind_null(stmt, 8)
-        }
-        return sqlite3_step(stmt) == SQLITE_DONE ? .ok : .failed(detail: lastError(db))
     }
 
     public func delete(_ id: DeviceId) -> StoreResult {
-        guard let db = ensureOpen() else { return .failed(detail: openError ?? "db unavailable") }
-        var stmt: OpaquePointer?
-        guard sqlite3_prepare_v2(db, "DELETE FROM trusted_device WHERE device_id = ?;", -1, &stmt, nil) == SQLITE_OK, let stmt else {
-            return .failed(detail: lastError(db))
+        lock.withLock {
+            guard let db = ensureOpenLocked() else { return .failed(detail: openError ?? "db unavailable") }
+            var stmt: OpaquePointer?
+            guard sqlite3_prepare_v2(db, "DELETE FROM trusted_device WHERE device_id = ?;", -1, &stmt, nil) == SQLITE_OK, let stmt else {
+                return .failed(detail: lastError(db))
+            }
+            defer { sqlite3_finalize(stmt) }
+            bindBlob(stmt, 1, id.bytes)
+            return sqlite3_step(stmt) == SQLITE_DONE ? .ok : .failed(detail: lastError(db))
         }
-        defer { sqlite3_finalize(stmt) }
-        bindBlob(stmt, 1, id.bytes)
-        return sqlite3_step(stmt) == SQLITE_DONE ? .ok : .failed(detail: lastError(db))
     }
 
     public func setAutoAccept(_ id: DeviceId, enabled: Bool) -> StoreResult {
-        guard let db = ensureOpen() else { return .failed(detail: openError ?? "db unavailable") }
-        var stmt: OpaquePointer?
-        guard sqlite3_prepare_v2(db, "UPDATE trusted_device SET auto_accept = ? WHERE device_id = ?;", -1, &stmt, nil) == SQLITE_OK, let stmt else {
-            return .failed(detail: lastError(db))
+        lock.withLock {
+            guard let db = ensureOpenLocked() else { return .failed(detail: openError ?? "db unavailable") }
+            var stmt: OpaquePointer?
+            guard sqlite3_prepare_v2(db, "UPDATE trusted_device SET auto_accept = ? WHERE device_id = ?;", -1, &stmt, nil) == SQLITE_OK, let stmt else {
+                return .failed(detail: lastError(db))
+            }
+            defer { sqlite3_finalize(stmt) }
+            sqlite3_bind_int(stmt, 1, enabled ? 1 : 0)
+            bindBlob(stmt, 2, id.bytes)
+            return sqlite3_step(stmt) == SQLITE_DONE ? .ok : .failed(detail: lastError(db))
         }
-        defer { sqlite3_finalize(stmt) }
-        sqlite3_bind_int(stmt, 1, enabled ? 1 : 0)
-        bindBlob(stmt, 2, id.bytes)
-        return sqlite3_step(stmt) == SQLITE_DONE ? .ok : .failed(detail: lastError(db))
     }
 
     public func updateName(_ id: DeviceId, name: String) -> StoreResult {
-        guard let db = ensureOpen() else { return .failed(detail: openError ?? "db unavailable") }
-        var stmt: OpaquePointer?
-        guard sqlite3_prepare_v2(db, "UPDATE trusted_device SET display_name = ? WHERE device_id = ?;", -1, &stmt, nil) == SQLITE_OK, let stmt else {
-            return .failed(detail: lastError(db))
+        lock.withLock {
+            guard let db = ensureOpenLocked() else { return .failed(detail: openError ?? "db unavailable") }
+            var stmt: OpaquePointer?
+            guard sqlite3_prepare_v2(db, "UPDATE trusted_device SET display_name = ? WHERE device_id = ?;", -1, &stmt, nil) == SQLITE_OK, let stmt else {
+                return .failed(detail: lastError(db))
+            }
+            defer { sqlite3_finalize(stmt) }
+            bindText(stmt, 1, name)
+            bindBlob(stmt, 2, id.bytes)
+            return sqlite3_step(stmt) == SQLITE_DONE ? .ok : .failed(detail: lastError(db))
         }
-        defer { sqlite3_finalize(stmt) }
-        bindText(stmt, 1, name)
-        bindBlob(stmt, 2, id.bytes)
-        return sqlite3_step(stmt) == SQLITE_DONE ? .ok : .failed(detail: lastError(db))
     }
 
     public func recordAddress(_ id: DeviceId, ip: Ipv4, port: Int) -> StoreResult {
-        guard let db = ensureOpen() else { return .failed(detail: openError ?? "db unavailable") }
-        var stmt: OpaquePointer?
-        guard sqlite3_prepare_v2(db, "UPDATE trusted_device SET last_ip = ?, last_port = ? WHERE device_id = ?;", -1, &stmt, nil) == SQLITE_OK, let stmt else {
-            return .failed(detail: lastError(db))
+        lock.withLock {
+            guard let db = ensureOpenLocked() else { return .failed(detail: openError ?? "db unavailable") }
+            var stmt: OpaquePointer?
+            guard sqlite3_prepare_v2(db, "UPDATE trusted_device SET last_ip = ?, last_port = ? WHERE device_id = ?;", -1, &stmt, nil) == SQLITE_OK, let stmt else {
+                return .failed(detail: lastError(db))
+            }
+            defer { sqlite3_finalize(stmt) }
+            sqlite3_bind_int64(stmt, 1, Int64(ip.rawValue))
+            sqlite3_bind_int(stmt, 2, Int32(port))
+            bindBlob(stmt, 3, id.bytes)
+            return sqlite3_step(stmt) == SQLITE_DONE ? .ok : .failed(detail: lastError(db))
         }
-        defer { sqlite3_finalize(stmt) }
-        sqlite3_bind_int64(stmt, 1, Int64(ip.rawValue))
-        sqlite3_bind_int(stmt, 2, Int32(port))
-        bindBlob(stmt, 3, id.bytes)
-        return sqlite3_step(stmt) == SQLITE_DONE ? .ok : .failed(detail: lastError(db))
     }
 
     // MARK: - HistoryStore
 
     public func findText(peer: DeviceId, id: MessageId) -> TextRecord? {
-        guard let db = ensureOpen() else { return nil }
-        let sql = "SELECT seq, peer_id, message_id, direction, peer_name, text_utf8, sent_at, recorded_at, recorded_tz, status FROM text_message WHERE peer_id = ? AND message_id = ?;"
-        var stmt: OpaquePointer?
-        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK, let stmt else { return nil }
-        defer { sqlite3_finalize(stmt) }
-        bindBlob(stmt, 1, peer.bytes)
-        bindBlob(stmt, 2, id.bytes)
-        guard sqlite3_step(stmt) == SQLITE_ROW else { return nil }
-        return readTextRow(stmt)
+        lock.withLock {
+            guard let db = ensureOpenLocked() else { return nil }
+            let sql = "SELECT seq, peer_id, message_id, direction, peer_name, text_utf8, sent_at, recorded_at, recorded_tz, status FROM text_message WHERE peer_id = ? AND message_id = ?;"
+            var stmt: OpaquePointer?
+            guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK, let stmt else { return nil }
+            defer { sqlite3_finalize(stmt) }
+            bindBlob(stmt, 1, peer.bytes)
+            bindBlob(stmt, 2, id.bytes)
+            guard sqlite3_step(stmt) == SQLITE_ROW else { return nil }
+            return readTextRow(stmt)
+        }
     }
 
     public func appendText(_ record: TextRecord) -> StoreResult {
-        guard let db = ensureOpen() else { return .failed(detail: openError ?? "db unavailable") }
-        guard exec(db, "BEGIN IMMEDIATE;") else { return .failed(detail: lastError(db)) }
-        let seq = allocateSeqLocked(db)
-        let sql = """
-        INSERT INTO text_message
-          (seq, peer_id, message_id, direction, peer_name, text_utf8, sent_at, recorded_at, recorded_tz, status)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-        """
-        var stmt: OpaquePointer?
-        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK, let stmt else {
-            _ = exec(db, "ROLLBACK;")
-            return .failed(detail: lastError(db))
-        }
-        defer { sqlite3_finalize(stmt) }
-        sqlite3_bind_int64(stmt, 1, seq)
-        bindBlob(stmt, 2, record.peer.bytes)
-        bindBlob(stmt, 3, record.messageId.bytes)
-        sqlite3_bind_int(stmt, 4, Int32(record.direction.rawValue))
-        bindText(stmt, 5, record.peerName)
-        bindBlob(stmt, 6, record.textUtf8)
-        sqlite3_bind_int64(stmt, 7, record.sentAtUtcMs)
-        sqlite3_bind_int64(stmt, 8, record.recordedAt.utcMs)
-        sqlite3_bind_int(stmt, 9, Int32(record.recordedAt.offsetMin))
-        sqlite3_bind_int(stmt, 10, Int32(record.status.rawValue))
+        lock.withLock {
+            guard let db = ensureOpenLocked() else { return .failed(detail: openError ?? "db unavailable") }
+            guard exec(db, "BEGIN IMMEDIATE;") else { return .failed(detail: lastError(db)) }
+            let seq = allocateSeqLocked(db)
+            let sql = """
+            INSERT INTO text_message
+              (seq, peer_id, message_id, direction, peer_name, text_utf8, sent_at, recorded_at, recorded_tz, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+            """
+            var stmt: OpaquePointer?
+            guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK, let stmt else {
+                _ = exec(db, "ROLLBACK;")
+                return .failed(detail: lastError(db))
+            }
+            defer { sqlite3_finalize(stmt) }
+            sqlite3_bind_int64(stmt, 1, seq)
+            bindBlob(stmt, 2, record.peer.bytes)
+            bindBlob(stmt, 3, record.messageId.bytes)
+            sqlite3_bind_int(stmt, 4, Int32(record.direction.rawValue))
+            bindText(stmt, 5, record.peerName)
+            bindBlob(stmt, 6, record.textUtf8)
+            sqlite3_bind_int64(stmt, 7, record.sentAtUtcMs)
+            sqlite3_bind_int64(stmt, 8, record.recordedAt.utcMs)
+            sqlite3_bind_int(stmt, 9, Int32(record.recordedAt.offsetMin))
+            sqlite3_bind_int(stmt, 10, Int32(record.status.rawValue))
 
-        let rc = sqlite3_step(stmt)
-        if (rc & 0xFF) == SQLITE_CONSTRAINT {
-            _ = exec(db, "ROLLBACK;")
-            return .duplicate
+            let rc = sqlite3_step(stmt)
+            if (rc & 0xFF) == SQLITE_CONSTRAINT {
+                _ = exec(db, "ROLLBACK;")
+                return .duplicate
+            }
+            guard rc == SQLITE_DONE else {
+                let err = lastError(db)
+                _ = exec(db, "ROLLBACK;")
+                return .failed(detail: err)
+            }
+            _ = exec(db, "COMMIT;")
+            return .ok
         }
-        guard rc == SQLITE_DONE else {
-            let err = lastError(db)
-            _ = exec(db, "ROLLBACK;")
-            return .failed(detail: err)
-        }
-        _ = exec(db, "COMMIT;")
-        return .ok
     }
 
     public func updateTextStatus(id: MessageId, peer: DeviceId, status: TextStatus) -> StoreResult {
-        guard let db = ensureOpen() else { return .failed(detail: openError ?? "db unavailable") }
-        var stmt: OpaquePointer?
-        guard sqlite3_prepare_v2(db, "UPDATE text_message SET status = ? WHERE peer_id = ? AND message_id = ?;", -1, &stmt, nil) == SQLITE_OK, let stmt else {
-            return .failed(detail: lastError(db))
+        lock.withLock {
+            guard let db = ensureOpenLocked() else { return .failed(detail: openError ?? "db unavailable") }
+            var stmt: OpaquePointer?
+            guard sqlite3_prepare_v2(db, "UPDATE text_message SET status = ? WHERE peer_id = ? AND message_id = ?;", -1, &stmt, nil) == SQLITE_OK, let stmt else {
+                return .failed(detail: lastError(db))
+            }
+            defer { sqlite3_finalize(stmt) }
+            sqlite3_bind_int(stmt, 1, Int32(status.rawValue))
+            bindBlob(stmt, 2, peer.bytes)
+            bindBlob(stmt, 3, id.bytes)
+            return sqlite3_step(stmt) == SQLITE_DONE ? .ok : .failed(detail: lastError(db))
         }
-        defer { sqlite3_finalize(stmt) }
-        sqlite3_bind_int(stmt, 1, Int32(status.rawValue))
-        bindBlob(stmt, 2, peer.bytes)
-        bindBlob(stmt, 3, id.bytes)
-        return sqlite3_step(stmt) == SQLITE_DONE ? .ok : .failed(detail: lastError(db))
     }
 
     public func upsertFile(_ record: FileRecord) -> StoreResult {
@@ -253,269 +278,287 @@ public actor SqliteDatabase: TrustStore, HistoryStore, TaskStore {
     }
 
     public func list(limit: Int) -> Result<[HistoryRecord], IoError> {
-        guard let db = ensureOpen() else { return .failure(IoError(openError ?? "db unavailable")) }
-        var items: [HistoryRecord] = []
+        lock.withLock {
+            guard let db = ensureOpenLocked() else { return .failure(IoError(openError ?? "db unavailable")) }
+            var items: [HistoryRecord] = []
 
-        var tStmt: OpaquePointer?
-        if sqlite3_prepare_v2(db, "SELECT seq, peer_id, message_id, direction, peer_name, text_utf8, sent_at, recorded_at, recorded_tz, status FROM text_message ORDER BY recorded_at DESC, seq DESC LIMIT ?;", -1, &tStmt, nil) == SQLITE_OK, let tStmt {
-            defer { sqlite3_finalize(tStmt) }
-            sqlite3_bind_int(tStmt, 1, Int32(limit))
-            while sqlite3_step(tStmt) == SQLITE_ROW {
-                if let rec = readTextRow(tStmt) {
-                    items.append(.text(rec))
-                }
-            }
-        }
-
-        let fSql = """
-        SELECT f.transfer_id, f.file_index, f.seq, f.original_name, f.size, f.mime, f.mtime, f.state, f.persisted,
-               f.sha256, f.source_ref, f.temp_ref, f.started_at, f.last_write_at, f.final_name, f.full_path, f.stored_ref,
-               t.peer_id, t.peer_name, t.direction, t.recorded_at, t.recorded_tz, t.state, t.interrupt_reason, t.interrupt_detail
-        FROM transfer_file f
-        JOIN transfer_task t ON f.transfer_id = t.transfer_id
-        ORDER BY t.recorded_at DESC, f.seq DESC
-        LIMIT ?;
-        """
-        var fStmt: OpaquePointer?
-        if sqlite3_prepare_v2(db, fSql, -1, &fStmt, nil) == SQLITE_OK, let fStmt {
-            defer { sqlite3_finalize(fStmt) }
-            sqlite3_bind_int(fStmt, 1, Int32(limit))
-            while sqlite3_step(fStmt) == SQLITE_ROW {
-                if let file = readTransferFileRow(fStmt),
-                   let peer = DeviceId(bytes: colBlob(fStmt, 17)),
-                   let dir = Direction(rawValue: Int(sqlite3_column_int(fStmt, 19))),
-                   let tState = TaskState(rawValue: Int(sqlite3_column_int(fStmt, 22))) {
-                    let peerName = colText(fStmt, 18) ?? ""
-                    let recTime = RecordTime(utcMs: sqlite3_column_int64(fStmt, 20), offsetMin: Int(sqlite3_column_int(fStmt, 21)))
-                    let interrupt: InterruptInfo?
-                    if sqlite3_column_type(fStmt, 23) != SQLITE_NULL,
-                       let reason = InterruptReason(rawValue: Int(sqlite3_column_int(fStmt, 23))) {
-                        interrupt = InterruptInfo(reason: reason, detail: colText(fStmt, 24))
-                    } else {
-                        interrupt = nil
+            var tStmt: OpaquePointer?
+            if sqlite3_prepare_v2(db, "SELECT seq, peer_id, message_id, direction, peer_name, text_utf8, sent_at, recorded_at, recorded_tz, status FROM text_message ORDER BY recorded_at DESC, seq DESC LIMIT ?;", -1, &tStmt, nil) == SQLITE_OK, let tStmt {
+                defer { sqlite3_finalize(tStmt) }
+                sqlite3_bind_int(tStmt, 1, Int32(limit))
+                while sqlite3_step(tStmt) == SQLITE_ROW {
+                    if let rec = readTextRow(tStmt) {
+                        items.append(.text(rec))
                     }
-                    items.append(.file(FileRecord(
-                        file: file,
-                        peer: peer,
-                        peerName: peerName,
-                        direction: dir,
-                        recordedAt: recTime,
-                        taskState: tState,
-                        interrupt: interrupt
-                    )))
                 }
             }
-        }
 
-        items.sort {
-            if $0.recordedAt.utcMs != $1.recordedAt.utcMs { return $0.recordedAt.utcMs > $1.recordedAt.utcMs }
-            return $0.seq > $1.seq
+            let fSql = """
+            SELECT f.transfer_id, f.file_index, f.seq, f.original_name, f.size, f.mime, f.mtime, f.state, f.persisted,
+                   f.sha256, f.source_ref, f.temp_ref, f.started_at, f.last_write_at, f.final_name, f.full_path, f.stored_ref,
+                   t.peer_id, t.peer_name, t.direction, t.recorded_at, t.recorded_tz, t.state, t.interrupt_reason, t.interrupt_detail
+            FROM transfer_file f
+            JOIN transfer_task t ON f.transfer_id = t.transfer_id
+            ORDER BY t.recorded_at DESC, f.seq DESC
+            LIMIT ?;
+            """
+            var fStmt: OpaquePointer?
+            if sqlite3_prepare_v2(db, fSql, -1, &fStmt, nil) == SQLITE_OK, let fStmt {
+                defer { sqlite3_finalize(fStmt) }
+                sqlite3_bind_int(fStmt, 1, Int32(limit))
+                while sqlite3_step(fStmt) == SQLITE_ROW {
+                    if let file = readTransferFileRow(fStmt),
+                       let peer = DeviceId(bytes: colBlob(fStmt, 17)),
+                       let dir = Direction(rawValue: Int(sqlite3_column_int(fStmt, 19))),
+                       let tState = TaskState(rawValue: Int(sqlite3_column_int(fStmt, 22))) {
+                        let peerName = colText(fStmt, 18) ?? ""
+                        let recTime = RecordTime(utcMs: sqlite3_column_int64(fStmt, 20), offsetMin: Int(sqlite3_column_int(fStmt, 21)))
+                        let interrupt: InterruptInfo?
+                        if sqlite3_column_type(fStmt, 23) != SQLITE_NULL,
+                           let reason = InterruptReason(rawValue: Int(sqlite3_column_int(fStmt, 23))) {
+                            interrupt = InterruptInfo(reason: reason, detail: colText(fStmt, 24))
+                        } else {
+                            interrupt = nil
+                        }
+                        items.append(.file(FileRecord(
+                            file: file,
+                            peer: peer,
+                            peerName: peerName,
+                            direction: dir,
+                            recordedAt: recTime,
+                            taskState: tState,
+                            interrupt: interrupt
+                        )))
+                    }
+                }
+            }
+
+            items.sort {
+                if $0.recordedAt.utcMs != $1.recordedAt.utcMs { return $0.recordedAt.utcMs > $1.recordedAt.utcMs }
+                return $0.seq > $1.seq
+            }
+            return .success(Array(items.prefix(limit)))
         }
-        return .success(Array(items.prefix(limit)))
     }
 
     public func delete(_ id: RecordId) -> StoreResult {
-        guard let db = ensureOpen() else { return .failed(detail: openError ?? "db unavailable") }
-        var stmt: OpaquePointer?
-        guard sqlite3_prepare_v2(db, "DELETE FROM text_message WHERE seq = ?;", -1, &stmt, nil) == SQLITE_OK, let stmt else {
-            return .failed(detail: lastError(db))
+        lock.withLock {
+            guard let db = ensureOpenLocked() else { return .failed(detail: openError ?? "db unavailable") }
+            var stmt: OpaquePointer?
+            guard sqlite3_prepare_v2(db, "DELETE FROM text_message WHERE seq = ?;", -1, &stmt, nil) == SQLITE_OK, let stmt else {
+                return .failed(detail: lastError(db))
+            }
+            defer { sqlite3_finalize(stmt) }
+            sqlite3_bind_int64(stmt, 1, id.seq)
+            return sqlite3_step(stmt) == SQLITE_DONE ? .ok : .failed(detail: lastError(db))
         }
-        defer { sqlite3_finalize(stmt) }
-        sqlite3_bind_int64(stmt, 1, id.seq)
-        return sqlite3_step(stmt) == SQLITE_DONE ? .ok : .failed(detail: lastError(db))
     }
 
     public func deleteFileRecord(transferId: TransferId, index: Int) -> StoreResult {
-        guard let db = ensureOpen() else { return .failed(detail: openError ?? "db unavailable") }
-        guard exec(db, "BEGIN IMMEDIATE;") else { return .failed(detail: lastError(db)) }
-        var delStmt: OpaquePointer?
-        if sqlite3_prepare_v2(db, "DELETE FROM transfer_file WHERE transfer_id = ? AND file_index = ?;", -1, &delStmt, nil) == SQLITE_OK, let delStmt {
-            bindBlob(delStmt, 1, transferId.bytes)
-            sqlite3_bind_int(delStmt, 2, Int32(index))
-            _ = sqlite3_step(delStmt)
-            sqlite3_finalize(delStmt)
-        }
-        var cntStmt: OpaquePointer?
-        var remaining: Int32 = 1
-        if sqlite3_prepare_v2(db, "SELECT COUNT(*) FROM transfer_file WHERE transfer_id = ?;", -1, &cntStmt, nil) == SQLITE_OK, let cntStmt {
-            bindBlob(cntStmt, 1, transferId.bytes)
-            if sqlite3_step(cntStmt) == SQLITE_ROW {
-                remaining = sqlite3_column_int(cntStmt, 0)
+        lock.withLock {
+            guard let db = ensureOpenLocked() else { return .failed(detail: openError ?? "db unavailable") }
+            guard exec(db, "BEGIN IMMEDIATE;") else { return .failed(detail: lastError(db)) }
+            var delStmt: OpaquePointer?
+            if sqlite3_prepare_v2(db, "DELETE FROM transfer_file WHERE transfer_id = ? AND file_index = ?;", -1, &delStmt, nil) == SQLITE_OK, let delStmt {
+                bindBlob(delStmt, 1, transferId.bytes)
+                sqlite3_bind_int(delStmt, 2, Int32(index))
+                _ = sqlite3_step(delStmt)
+                sqlite3_finalize(delStmt)
             }
-            sqlite3_finalize(cntStmt)
-        }
-        if remaining == 0 {
-            var taskDel: OpaquePointer?
-            if sqlite3_prepare_v2(db, "DELETE FROM transfer_task WHERE transfer_id = ?;", -1, &taskDel, nil) == SQLITE_OK, let taskDel {
-                bindBlob(taskDel, 1, transferId.bytes)
-                _ = sqlite3_step(taskDel)
-                sqlite3_finalize(taskDel)
+            var cntStmt: OpaquePointer?
+            var remaining: Int32 = 1
+            if sqlite3_prepare_v2(db, "SELECT COUNT(*) FROM transfer_file WHERE transfer_id = ?;", -1, &cntStmt, nil) == SQLITE_OK, let cntStmt {
+                bindBlob(cntStmt, 1, transferId.bytes)
+                if sqlite3_step(cntStmt) == SQLITE_ROW {
+                    remaining = sqlite3_column_int(cntStmt, 0)
+                }
+                sqlite3_finalize(cntStmt)
             }
+            if remaining == 0 {
+                var taskDel: OpaquePointer?
+                if sqlite3_prepare_v2(db, "DELETE FROM transfer_task WHERE transfer_id = ?;", -1, &taskDel, nil) == SQLITE_OK, let taskDel {
+                    bindBlob(taskDel, 1, transferId.bytes)
+                    _ = sqlite3_step(taskDel)
+                    sqlite3_finalize(taskDel)
+                }
+            }
+            _ = exec(db, "COMMIT;")
+            return .ok
         }
-        _ = exec(db, "COMMIT;")
-        return .ok
     }
 
     public func clearAll() -> StoreResult {
-        guard let db = ensureOpen() else { return .failed(detail: openError ?? "db unavailable") }
-        let ok = exec(db, "BEGIN IMMEDIATE; DELETE FROM text_message; DELETE FROM transfer_file; DELETE FROM transfer_task; COMMIT;")
-        return ok ? .ok : .failed(detail: lastError(db))
+        lock.withLock {
+            guard let db = ensureOpenLocked() else { return .failed(detail: openError ?? "db unavailable") }
+            let ok = exec(db, "BEGIN IMMEDIATE; DELETE FROM text_message; DELETE FROM transfer_file; DELETE FROM transfer_task; COMMIT;")
+            return ok ? .ok : .failed(detail: lastError(db))
+        }
     }
 
     // MARK: - TaskStore
 
     public func save(_ task: TransferTask) -> StoreResult {
-        guard let db = ensureOpen() else { return .failed(detail: openError ?? "db unavailable") }
-        guard exec(db, "BEGIN IMMEDIATE;") else { return .failed(detail: lastError(db)) }
+        lock.withLock {
+            guard let db = ensureOpenLocked() else { return .failed(detail: openError ?? "db unavailable") }
+            guard exec(db, "BEGIN IMMEDIATE;") else { return .failed(detail: lastError(db)) }
 
-        let taskSql = """
-        INSERT OR REPLACE INTO transfer_task
-          (transfer_id, peer_id, peer_name, direction, state, interrupt_reason, interrupt_detail, receive_dir, recorded_at, recorded_tz, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-        """
-        var stmt: OpaquePointer?
-        guard sqlite3_prepare_v2(db, taskSql, -1, &stmt, nil) == SQLITE_OK, let stmt else {
-            _ = exec(db, "ROLLBACK;")
-            return .failed(detail: lastError(db))
-        }
-        bindBlob(stmt, 1, task.transferId.bytes)
-        bindBlob(stmt, 2, task.peer.bytes)
-        bindText(stmt, 3, task.peerName)
-        sqlite3_bind_int(stmt, 4, Int32(task.direction.rawValue))
-        sqlite3_bind_int(stmt, 5, Int32(task.state.rawValue))
-        if let interrupt = task.interrupt {
-            sqlite3_bind_int(stmt, 6, Int32(interrupt.reason.rawValue))
-            bindOptText(stmt, 7, interrupt.detail)
-        } else {
-            sqlite3_bind_null(stmt, 6)
-            sqlite3_bind_null(stmt, 7)
-        }
-        bindOptText(stmt, 8, task.receiveDir?.serialized)
-        sqlite3_bind_int64(stmt, 9, task.recordedAt.utcMs)
-        sqlite3_bind_int(stmt, 10, Int32(task.recordedAt.offsetMin))
-        sqlite3_bind_int64(stmt, 11, task.updatedAtUtcMs)
-        let rc = sqlite3_step(stmt)
-        sqlite3_finalize(stmt)
-        guard rc == SQLITE_DONE else {
-            let err = lastError(db)
-            _ = exec(db, "ROLLBACK;")
-            return .failed(detail: err)
-        }
-
-        // 查询已有文件序号，保证更新不改变原始 seq
-        var existingSeq: [Int: Int64] = [:]
-        var qStmt: OpaquePointer?
-        if sqlite3_prepare_v2(db, "SELECT file_index, seq FROM transfer_file WHERE transfer_id = ?;", -1, &qStmt, nil) == SQLITE_OK, let qStmt {
-            bindBlob(qStmt, 1, task.transferId.bytes)
-            while sqlite3_step(qStmt) == SQLITE_ROW {
-                existingSeq[Int(sqlite3_column_int(qStmt, 0))] = sqlite3_column_int64(qStmt, 1)
-            }
-            sqlite3_finalize(qStmt)
-        }
-
-        let fileSql = """
-        INSERT OR REPLACE INTO transfer_file
-          (transfer_id, file_index, seq, original_name, size, mime, mtime, state, persisted, sha256,
-           source_ref, temp_ref, started_at, last_write_at, final_name, full_path, stored_ref)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-        """
-        for f in task.files {
-            let seq = existingSeq[f.index] ?? (f.seq > 0 ? f.seq : allocateSeqLocked(db))
-            var fStmt: OpaquePointer?
-            guard sqlite3_prepare_v2(db, fileSql, -1, &fStmt, nil) == SQLITE_OK, let fStmt else {
+            let taskSql = """
+            INSERT OR REPLACE INTO transfer_task
+              (transfer_id, peer_id, peer_name, direction, state, interrupt_reason, interrupt_detail, receive_dir, recorded_at, recorded_tz, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+            """
+            var stmt: OpaquePointer?
+            guard sqlite3_prepare_v2(db, taskSql, -1, &stmt, nil) == SQLITE_OK, let stmt else {
                 _ = exec(db, "ROLLBACK;")
                 return .failed(detail: lastError(db))
             }
-            bindBlob(fStmt, 1, f.transferId.bytes)
-            sqlite3_bind_int(fStmt, 2, Int32(f.index))
-            sqlite3_bind_int64(fStmt, 3, seq)
-            bindText(fStmt, 4, f.originalName)
-            sqlite3_bind_int64(fStmt, 5, f.size)
-            bindText(fStmt, 6, f.mime)
-            bindOptInt64(fStmt, 7, f.mtime)
-            sqlite3_bind_int(fStmt, 8, Int32(f.state.rawValue))
-            sqlite3_bind_int64(fStmt, 9, f.persisted)
-            bindOptBlob(fStmt, 10, f.sha256)
-            bindOptText(fStmt, 11, f.sourceRef?.value)
-            bindOptText(fStmt, 12, f.tempRef?.value)
-            bindOptText(fStmt, 13, f.startedAt?.isoString)
-            bindOptInt64(fStmt, 14, f.lastWriteAtUtcMs)
-            bindOptText(fStmt, 15, f.finalName)
-            bindOptText(fStmt, 16, f.fullPath)
-            bindOptText(fStmt, 17, f.storedRef?.value)
-            let frc = sqlite3_step(fStmt)
-            sqlite3_finalize(fStmt)
-            if frc != SQLITE_DONE {
+            bindBlob(stmt, 1, task.transferId.bytes)
+            bindBlob(stmt, 2, task.peer.bytes)
+            bindText(stmt, 3, task.peerName)
+            sqlite3_bind_int(stmt, 4, Int32(task.direction.rawValue))
+            sqlite3_bind_int(stmt, 5, Int32(task.state.rawValue))
+            if let interrupt = task.interrupt {
+                sqlite3_bind_int(stmt, 6, Int32(interrupt.reason.rawValue))
+                bindOptText(stmt, 7, interrupt.detail)
+            } else {
+                sqlite3_bind_null(stmt, 6)
+                sqlite3_bind_null(stmt, 7)
+            }
+            bindOptText(stmt, 8, task.receiveDir?.serialized)
+            sqlite3_bind_int64(stmt, 9, task.recordedAt.utcMs)
+            sqlite3_bind_int(stmt, 10, Int32(task.recordedAt.offsetMin))
+            sqlite3_bind_int64(stmt, 11, task.updatedAtUtcMs)
+            let rc = sqlite3_step(stmt)
+            sqlite3_finalize(stmt)
+            guard rc == SQLITE_DONE else {
                 let err = lastError(db)
                 _ = exec(db, "ROLLBACK;")
                 return .failed(detail: err)
             }
+
+            // 查询已有文件序号，保证更新不改变原始 seq
+            var existingSeq: [Int: Int64] = [:]
+            var qStmt: OpaquePointer?
+            if sqlite3_prepare_v2(db, "SELECT file_index, seq FROM transfer_file WHERE transfer_id = ?;", -1, &qStmt, nil) == SQLITE_OK, let qStmt {
+                bindBlob(qStmt, 1, task.transferId.bytes)
+                while sqlite3_step(qStmt) == SQLITE_ROW {
+                    existingSeq[Int(sqlite3_column_int(qStmt, 0))] = sqlite3_column_int64(qStmt, 1)
+                }
+                sqlite3_finalize(qStmt)
+            }
+
+            let fileSql = """
+            INSERT OR REPLACE INTO transfer_file
+              (transfer_id, file_index, seq, original_name, size, mime, mtime, state, persisted, sha256,
+               source_ref, temp_ref, started_at, last_write_at, final_name, full_path, stored_ref)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+            """
+            for f in task.files {
+                let seq = existingSeq[f.index] ?? (f.seq > 0 ? f.seq : allocateSeqLocked(db))
+                var fStmt: OpaquePointer?
+                guard sqlite3_prepare_v2(db, fileSql, -1, &fStmt, nil) == SQLITE_OK, let fStmt else {
+                    _ = exec(db, "ROLLBACK;")
+                    return .failed(detail: lastError(db))
+                }
+                bindBlob(fStmt, 1, f.transferId.bytes)
+                sqlite3_bind_int(fStmt, 2, Int32(f.index))
+                sqlite3_bind_int64(fStmt, 3, seq)
+                bindText(fStmt, 4, f.originalName)
+                sqlite3_bind_int64(fStmt, 5, f.size)
+                bindText(fStmt, 6, f.mime)
+                bindOptInt64(fStmt, 7, f.mtime)
+                sqlite3_bind_int(fStmt, 8, Int32(f.state.rawValue))
+                sqlite3_bind_int64(fStmt, 9, f.persisted)
+                bindOptBlob(fStmt, 10, f.sha256)
+                bindOptText(fStmt, 11, f.sourceRef?.value)
+                bindOptText(fStmt, 12, f.tempRef?.value)
+                bindOptText(fStmt, 13, f.startedAt?.isoString)
+                bindOptInt64(fStmt, 14, f.lastWriteAtUtcMs)
+                bindOptText(fStmt, 15, f.finalName)
+                bindOptText(fStmt, 16, f.fullPath)
+                bindOptText(fStmt, 17, f.storedRef?.value)
+                let frc = sqlite3_step(fStmt)
+                sqlite3_finalize(fStmt)
+                if frc != SQLITE_DONE {
+                    let err = lastError(db)
+                    _ = exec(db, "ROLLBACK;")
+                    return .failed(detail: err)
+                }
+            }
+            _ = exec(db, "COMMIT;")
+            return .ok
         }
-        _ = exec(db, "COMMIT;")
-        return .ok
     }
 
     public func get(_ id: TransferId) -> TransferTask? {
-        guard let db = ensureOpen() else { return nil }
-        let sql = "SELECT transfer_id, peer_id, peer_name, direction, state, interrupt_reason, interrupt_detail, receive_dir, recorded_at, recorded_tz, updated_at FROM transfer_task WHERE transfer_id = ?;"
-        var stmt: OpaquePointer?
-        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK, let stmt else { return nil }
-        defer { sqlite3_finalize(stmt) }
-        bindBlob(stmt, 1, id.bytes)
-        guard sqlite3_step(stmt) == SQLITE_ROW else { return nil }
-        return readTaskRow(db: db, stmt: stmt)
+        lock.withLock {
+            guard let db = ensureOpenLocked() else { return nil }
+            let sql = "SELECT transfer_id, peer_id, peer_name, direction, state, interrupt_reason, interrupt_detail, receive_dir, recorded_at, recorded_tz, updated_at FROM transfer_task WHERE transfer_id = ?;"
+            var stmt: OpaquePointer?
+            guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK, let stmt else { return nil }
+            defer { sqlite3_finalize(stmt) }
+            bindBlob(stmt, 1, id.bytes)
+            guard sqlite3_step(stmt) == SQLITE_ROW else { return nil }
+            return readTaskRow(db: db, stmt: stmt)
+        }
     }
 
     public func unfinished() -> [TransferTask] {
-        guard let db = ensureOpen() else { return [] }
-        let sql = "SELECT transfer_id, peer_id, peer_name, direction, state, interrupt_reason, interrupt_detail, receive_dir, recorded_at, recorded_tz, updated_at FROM transfer_task WHERE state < 10 ORDER BY recorded_at DESC;"
-        var stmt: OpaquePointer?
-        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK, let stmt else { return [] }
-        defer { sqlite3_finalize(stmt) }
-        var out: [TransferTask] = []
-        while sqlite3_step(stmt) == SQLITE_ROW {
-            if let t = readTaskRow(db: db, stmt: stmt) {
-                out.append(t)
+        lock.withLock {
+            guard let db = ensureOpenLocked() else { return [] }
+            let sql = "SELECT transfer_id, peer_id, peer_name, direction, state, interrupt_reason, interrupt_detail, receive_dir, recorded_at, recorded_tz, updated_at FROM transfer_task WHERE state < 10 ORDER BY recorded_at DESC;"
+            var stmt: OpaquePointer?
+            guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK, let stmt else { return [] }
+            defer { sqlite3_finalize(stmt) }
+            var out: [TransferTask] = []
+            while sqlite3_step(stmt) == SQLITE_ROW {
+                if let t = readTaskRow(db: db, stmt: stmt) {
+                    out.append(t)
+                }
             }
+            return out
         }
-        return out
     }
 
     public func addPendingCancel(peer: DeviceId, transferId: TransferId) -> StoreResult {
-        guard let db = ensureOpen() else { return .failed(detail: openError ?? "db unavailable") }
-        var stmt: OpaquePointer?
-        guard sqlite3_prepare_v2(db, "INSERT OR REPLACE INTO pending_cancel (peer_id, transfer_id, created_at) VALUES (?, ?, ?);", -1, &stmt, nil) == SQLITE_OK, let stmt else {
-            return .failed(detail: lastError(db))
+        lock.withLock {
+            guard let db = ensureOpenLocked() else { return .failed(detail: openError ?? "db unavailable") }
+            var stmt: OpaquePointer?
+            guard sqlite3_prepare_v2(db, "INSERT OR REPLACE INTO pending_cancel (peer_id, transfer_id, created_at) VALUES (?, ?, ?);", -1, &stmt, nil) == SQLITE_OK, let stmt else {
+                return .failed(detail: lastError(db))
+            }
+            defer { sqlite3_finalize(stmt) }
+            bindBlob(stmt, 1, peer.bytes)
+            bindBlob(stmt, 2, transferId.bytes)
+            sqlite3_bind_int64(stmt, 3, Int64(Date().timeIntervalSince1970 * 1000.0))
+            return sqlite3_step(stmt) == SQLITE_DONE ? .ok : .failed(detail: lastError(db))
         }
-        defer { sqlite3_finalize(stmt) }
-        bindBlob(stmt, 1, peer.bytes)
-        bindBlob(stmt, 2, transferId.bytes)
-        sqlite3_bind_int64(stmt, 3, Int64(Date().timeIntervalSince1970 * 1000.0))
-        return sqlite3_step(stmt) == SQLITE_DONE ? .ok : .failed(detail: lastError(db))
     }
 
     public func takePendingCancels(peer: DeviceId) -> [TransferId] {
-        guard let db = ensureOpen() else { return [] }
-        var result: [TransferId] = []
-        var stmt: OpaquePointer?
-        if sqlite3_prepare_v2(db, "SELECT transfer_id FROM pending_cancel WHERE peer_id = ? ORDER BY created_at ASC;", -1, &stmt, nil) == SQLITE_OK, let stmt {
-            bindBlob(stmt, 1, peer.bytes)
-            while sqlite3_step(stmt) == SQLITE_ROW {
-                if let tid = TransferId(bytes: colBlob(stmt, 0)) {
-                    result.append(tid)
+        lock.withLock {
+            guard let db = ensureOpenLocked() else { return [] }
+            var result: [TransferId] = []
+            var stmt: OpaquePointer?
+            if sqlite3_prepare_v2(db, "SELECT transfer_id FROM pending_cancel WHERE peer_id = ? ORDER BY created_at ASC;", -1, &stmt, nil) == SQLITE_OK, let stmt {
+                bindBlob(stmt, 1, peer.bytes)
+                while sqlite3_step(stmt) == SQLITE_ROW {
+                    if let tid = TransferId(bytes: colBlob(stmt, 0)) {
+                        result.append(tid)
+                    }
+                }
+                sqlite3_finalize(stmt)
+            }
+            if !result.isEmpty {
+                var delStmt: OpaquePointer?
+                if sqlite3_prepare_v2(db, "DELETE FROM pending_cancel WHERE peer_id = ?;", -1, &delStmt, nil) == SQLITE_OK, let delStmt {
+                    bindBlob(delStmt, 1, peer.bytes)
+                    _ = sqlite3_step(delStmt)
+                    sqlite3_finalize(delStmt)
                 }
             }
-            sqlite3_finalize(stmt)
+            return result
         }
-        if !result.isEmpty {
-            var delStmt: OpaquePointer?
-            if sqlite3_prepare_v2(db, "DELETE FROM pending_cancel WHERE peer_id = ?;", -1, &delStmt, nil) == SQLITE_OK, let delStmt {
-                bindBlob(delStmt, 1, peer.bytes)
-                _ = sqlite3_step(delStmt)
-                sqlite3_finalize(delStmt)
-            }
-        }
-        return result
     }
 
     // MARK: - Helpers

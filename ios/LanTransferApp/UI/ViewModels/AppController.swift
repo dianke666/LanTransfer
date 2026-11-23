@@ -143,7 +143,7 @@ public final class AppController {
                 await engine.stopNetworking(reason: .background)
                 await notifier.notifyBackgroundPaused()
             }
-            await networkMonitor.start()
+            networkMonitor.start()
             await engine.start()
 
             Task { [weak self] in

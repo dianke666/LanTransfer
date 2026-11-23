@@ -306,9 +306,52 @@ public struct QrScanView: View {
     }
 }
 
+private final class CameraSessionBox: @unchecked Sendable {
+    let session = AVCaptureSession()
+    private let queue = DispatchQueue(label: "com.lantransfer.qr.camera")
+
+    func start(delegate: any AVCaptureMetadataOutputObjectsDelegate & Sendable) {
+        queue.async {
+            guard let device = AVCaptureDevice.default(for: .video),
+                  let input = try? AVCaptureDeviceInput(device: device),
+                  self.session.canAddInput(input) else {
+                return
+            }
+            self.session.beginConfiguration()
+            self.session.addInput(input)
+            let output = AVCaptureMetadataOutput()
+            if self.session.canAddOutput(output) {
+                self.session.addOutput(output)
+                output.setMetadataObjectsDelegate(delegate, queue: DispatchQueue.main)
+                output.metadataObjectTypes = [.qr]
+            }
+            self.session.commitConfiguration()
+            self.session.startRunning()
+        }
+    }
+
+    func setTorch(_ enabled: Bool) {
+        queue.async {
+            guard let device = AVCaptureDevice.default(for: .video), device.hasTorch else { return }
+            try? device.lockForConfiguration()
+            device.torchMode = enabled ? .on : .off
+            device.unlockForConfiguration()
+        }
+    }
+
+    func stop() {
+        setTorch(false)
+        queue.async {
+            if self.session.isRunning {
+                self.session.stopRunning()
+            }
+        }
+    }
+}
+
 private struct QrCameraPreview: UIViewRepresentable {
     let torchOn: Bool
-    let onDetected: @MainActor (String) -> Void
+    let onDetected: (String) -> Void
 
     func makeCoordinator() -> Coordinator {
         Coordinator(onDetected: onDetected)
@@ -336,61 +379,33 @@ private struct QrCameraPreview: UIViewRepresentable {
         }
     }
 
-    final class Coordinator: NSObject, AVCaptureMetadataOutputObjectsDelegate, @unchecked Sendable {
-        private let onDetected: @MainActor (String) -> Void
-        private let session = AVCaptureSession()
-        private let sessionQueue = DispatchQueue(label: "com.lantransfer.qr.camera")
+    @MainActor
+    final class Coordinator: NSObject, AVCaptureMetadataOutputObjectsDelegate {
+        private let onDetected: (String) -> Void
+        private let sessionBox = CameraSessionBox()
 
-        init(onDetected: @escaping @MainActor (String) -> Void) {
+        init(onDetected: @escaping (String) -> Void) {
             self.onDetected = onDetected
         }
 
-        @MainActor
         func startSession(in view: CameraContainerView) {
-            let layer = AVCaptureVideoPreviewLayer(session: session)
+            let layer = AVCaptureVideoPreviewLayer(session: sessionBox.session)
             layer.videoGravity = .resizeAspectFill
             layer.frame = view.bounds
             view.layer.addSublayer(layer)
             view.previewLayer = layer
-
-            sessionQueue.async {
-                guard let device = AVCaptureDevice.default(for: .video),
-                      let input = try? AVCaptureDeviceInput(device: device),
-                      self.session.canAddInput(input) else {
-                    return
-                }
-                self.session.beginConfiguration()
-                self.session.addInput(input)
-                let output = AVCaptureMetadataOutput()
-                if self.session.canAddOutput(output) {
-                    self.session.addOutput(output)
-                    output.setMetadataObjectsDelegate(self, queue: DispatchQueue.main)
-                    output.metadataObjectTypes = [.qr]
-                }
-                self.session.commitConfiguration()
-                self.session.startRunning()
-            }
+            sessionBox.start(delegate: self)
         }
 
         func setTorch(_ enabled: Bool) {
-            sessionQueue.async {
-                guard let device = AVCaptureDevice.default(for: .video), device.hasTorch else { return }
-                try? device.lockForConfiguration()
-                device.torchMode = enabled ? .on : .off
-                device.unlockForConfiguration()
-            }
+            sessionBox.setTorch(enabled)
         }
 
         func stopSession() {
-            setTorch(false)
-            sessionQueue.async {
-                if self.session.isRunning {
-                    self.session.stopRunning()
-                }
-            }
+            sessionBox.stop()
         }
 
-        func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
+        nonisolated func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
             guard let readable = metadataObjects.first as? AVMetadataMachineReadableCodeObject,
                   let text = readable.stringValue else {
                 return

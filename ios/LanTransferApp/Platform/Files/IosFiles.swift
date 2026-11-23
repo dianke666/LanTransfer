@@ -5,8 +5,8 @@ import LanTransferProtocol
 import UniformTypeIdentifiers
 
 /// iOS 文件接收存储：最终文件落盘至 `Documents/LanTransfer`（自动在系统“文件”App 可见），未完成的 `.part` 临时文件严格隔离在 `Library/Caches/lantransfer-tmp`。
-public actor IosReceiveStorage: ReceiveStorage {
-    public nonisolated let fsProfile: FsProfile = .ios
+public final class IosReceiveStorage: ReceiveStorage, @unchecked Sendable {
+    public let fsProfile: FsProfile = .ios
 
     public init() {}
 
@@ -134,7 +134,7 @@ public actor IosReceiveStorage: ReceiveStorage {
             let modDate = (try? url.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? Date.distantPast
             let ms = Int64(modDate.timeIntervalSince1970 * 1000.0)
             let parts = name.dropFirst(4).dropLast(5).split(separator: "-")
-            let tid = parts.first.flatMap { parseHex16(String($0)) }.flatMap(TransferId.init(bytes:))
+            let tid = parts.first.flatMap { Self.parseHex16(String($0)) }.flatMap(TransferId.init(bytes:))
             return TempInfo(ref: TempRef(url.path), transferId: tid, lastWriteUtcMs: ms)
         }
     }
@@ -168,7 +168,7 @@ public actor IosReceiveStorage: ReceiveStorage {
         }
     }
 
-    private func parseHex16(_ s: String) -> Data? {
+    private static func parseHex16(_ s: String) -> Data? {
         let chars = Array(s.utf8)
         guard chars.count == 32 else { return nil }
         func nib(_ c: UInt8) -> UInt8? {
@@ -192,10 +192,10 @@ public actor IosReceiveStorage: ReceiveStorage {
 }
 
 /// iOS 源文件读取端口（支持 `fileImporter` 安全作用域 URL 与 `PhotosPicker` 导出文件）。
-public actor IosSourceFiles: SourceFiles {
+public final class IosSourceFiles: SourceFiles, @unchecked Sendable {
     public init() {}
 
-    public func stat(_ ref: SourceRef) -> Result<SourceMeta, IoError> {
+    public func stat(_ ref: SourceRef) async -> Result<SourceMeta, IoError> {
         let url = resolveURL(ref.value)
         let accessed = url.startAccessingSecurityScopedResource()
         defer { if accessed { url.stopAccessingSecurityScopedResource() } }
@@ -213,7 +213,7 @@ public actor IosSourceFiles: SourceFiles {
         }
     }
 
-    public func openForRead(_ ref: SourceRef, offset: Int64) -> Result<any ChunkReader, IoError> {
+    public func openForRead(_ ref: SourceRef, offset: Int64) async -> Result<any ChunkReader, IoError> {
         let url = resolveURL(ref.value)
         do {
             let reader = try FileHandleChunkReader(url: url, offset: offset, securityScoped: true)
@@ -231,7 +231,8 @@ public actor IosSourceFiles: SourceFiles {
     }
 }
 
-private actor FileHandleTempWriter: TempWriter {
+private final class FileHandleTempWriter: TempWriter, @unchecked Sendable {
+    private let lock = NSLock()
     private let handle: FileHandle
     private var closed = false
 
@@ -242,34 +243,49 @@ private actor FileHandleTempWriter: TempWriter {
         self.handle = h
     }
 
-    func write(_ data: Data) -> IoResult {
-        guard !closed else { return .failed(detail: "文件句柄已关闭") }
-        do {
-            try handle.write(contentsOf: data)
-            return .ok
-        } catch {
-            return .failed(detail: error.localizedDescription)
+    deinit {
+        closeSync()
+    }
+
+    func write(_ data: Data) async -> IoResult {
+        lock.withLock {
+            guard !closed else { return .failed(detail: "文件句柄已关闭") }
+            do {
+                try handle.write(contentsOf: data)
+                return .ok
+            } catch {
+                return .failed(detail: error.localizedDescription)
+            }
         }
     }
 
-    func flushSync() -> IoResult {
-        guard !closed else { return .ok }
-        do {
-            try handle.synchronize()
-            return .ok
-        } catch {
-            return .failed(detail: error.localizedDescription)
+    func flushSync() async -> IoResult {
+        lock.withLock {
+            guard !closed else { return .ok }
+            do {
+                try handle.synchronize()
+                return .ok
+            } catch {
+                return .failed(detail: error.localizedDescription)
+            }
         }
     }
 
-    func close() {
-        guard !closed else { return }
-        closed = true
-        try? handle.close()
+    func close() async {
+        closeSync()
+    }
+
+    private func closeSync() {
+        lock.withLock {
+            guard !closed else { return }
+            closed = true
+            try? handle.close()
+        }
     }
 }
 
-private actor FileHandleChunkReader: ChunkReader {
+private final class FileHandleChunkReader: ChunkReader, @unchecked Sendable {
+    private let lock = NSLock()
     private let handle: FileHandle
     private let scopedURL: URL?
     private var closed = false
@@ -289,22 +305,34 @@ private actor FileHandleChunkReader: ChunkReader {
         }
     }
 
-    func read(maxBytes: Int) -> Result<Data?, IoError> {
-        guard !closed else { return .success(nil) }
-        do {
-            if let data = try handle.read(upToCount: maxBytes), !data.isEmpty {
-                return .success(data)
+    deinit {
+        closeSync()
+    }
+
+    func read(maxBytes: Int) async -> Result<Data?, IoError> {
+        lock.withLock {
+            guard !closed else { return .success(nil) }
+            do {
+                if let data = try handle.read(upToCount: maxBytes), !data.isEmpty {
+                    return .success(data)
+                }
+                return .success(nil)
+            } catch {
+                return .failure(IoError(error.localizedDescription))
             }
-            return .success(nil)
-        } catch {
-            return .failure(IoError(error.localizedDescription))
         }
     }
 
-    func close() {
-        guard !closed else { return }
-        closed = true
-        try? handle.close()
-        scopedURL?.stopAccessingSecurityScopedResource()
+    func close() async {
+        closeSync()
+    }
+
+    private func closeSync() {
+        lock.withLock {
+            guard !closed else { return }
+            closed = true
+            try? handle.close()
+            scopedURL?.stopAccessingSecurityScopedResource()
+        }
     }
 }

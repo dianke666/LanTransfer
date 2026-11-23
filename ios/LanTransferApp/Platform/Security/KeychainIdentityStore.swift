@@ -28,13 +28,12 @@ public actor KeychainIdentityStore: IdentityStore {
     }
 
     public func displayName() async -> String {
-        let ud = defaults()
-        if let saved = ud.string(forKey: Self.displayNameKey), !saved.isEmpty {
+        if let saved = defaults().string(forKey: Self.displayNameKey), !saved.isEmpty {
             return saved
         }
         let deviceName = await MainActor.run { UIDevice.current.name }
         let fallback = DisplayNameRules.defaultName(modelOrComputerName: deviceName, type: .ios)
-        ud.set(fallback, forKey: Self.displayNameKey)
+        defaults().set(fallback, forKey: Self.displayNameKey)
         return fallback
     }
 
@@ -106,8 +105,8 @@ public actor KeychainIdentityStore: IdentityStore {
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: Self.service,
             kSecAttrAccount as String: Self.account,
-            kSecAttrSynchronizable as String: kCFBooleanFalse as Any,
-            kSecReturnData as String: kCFBooleanTrue as Any,
+            kSecAttrSynchronizable as String: false,
+            kSecReturnData as String: true,
             kSecMatchLimit as String: kSecMatchLimitOne,
         ]
         var item: CFTypeRef?
@@ -120,7 +119,7 @@ public actor KeychainIdentityStore: IdentityStore {
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: Self.service,
             kSecAttrAccount as String: Self.account,
-            kSecAttrSynchronizable as String: kCFBooleanFalse as Any,
+            kSecAttrSynchronizable as String: false,
         ]
         SecItemDelete(baseQuery as CFDictionary)
 
