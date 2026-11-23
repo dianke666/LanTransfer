@@ -1,0 +1,795 @@
+<Window x:Class="LanTransfer.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:app="clr-namespace:LanTransfer.App"
+        xmlns:conv="clr-namespace:LanTransfer.App.Converters"
+        xmlns:views="clr-namespace:LanTransfer.App.Views"
+        Title="{x:Static app:UiText.AppName}"
+        Width="1140"
+        Height="750"
+        MinWidth="940"
+        MinHeight="640"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource CanvasBrush}"
+        Foreground="{DynamicResource TextPrimaryBrush}"
+        FontFamily="{StaticResource AppFont}"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True">
+    <Window.Resources>
+        <conv:BoolToVisibilityConverter x:Key="BoolToVis" />
+        <conv:BoolToVisibilityConverter x:Key="InvertBoolToVis" Invert="True" />
+        <conv:DeviceTypeToGeometryConverter x:Key="DeviceIconConv" />
+        <conv:DeviceTypeToAccentBrushConverter x:Key="DeviceAccentConv" />
+    </Window.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="292" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- 左侧现代导航与设备侧栏 -->
+        <Border Grid.Column="0"
+                Background="{DynamicResource SidebarBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="0,0,1,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!-- 品牌头 + 快捷主题切换 -->
+                <Grid Grid.Row="0" Margin="18,18,16,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Width="38" Height="38" CornerRadius="11"
+                            Background="{DynamicResource AccentBrush}">
+                        <Path Data="{StaticResource IconLogo}"
+                              Stroke="#FFFFFF"
+                              StrokeThickness="1.9"
+                              StrokeStartLineCap="Round"
+                              StrokeEndLineCap="Round"
+                              StrokeLineJoin="Round"
+                              Stretch="Uniform"
+                              Width="22" Height="22"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center" />
+                    </Border>
+
+                    <StackPanel Grid.Column="1" Margin="11,0,6,0" VerticalAlignment="Center">
+                        <TextBlock Text="{x:Static app:UiText.AppName}"
+                                   FontSize="15.5"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource TextPrimaryBrush}" />
+                        <TextBlock Text="{x:Static app:UiText.AppSubtitle}"
+                                   FontSize="11.5"
+                                   Foreground="{DynamicResource TextMutedBrush}"
+                                   TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+
+                    <Button Grid.Column="2"
+                            Style="{StaticResource GhostButtonStyle}"
+                            Command="{Binding ToggleQuickThemeCommand}"
+                            Padding="8"
+                            ToolTip="{x:Static app:UiText.SectionAppearance}"
+                            AutomationProperties.Name="{x:Static app:UiText.SectionAppearance}">
+                        <Path Data="{StaticResource IconSun}"
+                              Stroke="{DynamicResource TextSecondaryBrush}"
+                              StrokeThickness="1.7"
+                              StrokeStartLineCap="Round"
+                              StrokeEndLineCap="Round"
+                              Stretch="Uniform"
+                              Width="16" Height="16" />
+                    </Button>
+                </Grid>
+
+                <!-- 本机信息卡片与快捷连接按钮 -->
+                <Border Grid.Row="1" Margin="14,0,14,12" Style="{StaticResource SubtleCardStyle}" Padding="13,11">
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Ellipse Width="8" Height="8" VerticalAlignment="Center" Margin="0,0,7,0">
+                                <Ellipse.Style>
+                                    <Style TargetType="Ellipse">
+                                        <Setter Property="Fill" Value="{DynamicResource SuccessBrush}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HasNetwork}" Value="False">
+                                                <Setter Property="Fill" Value="{DynamicResource WarningBrush}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Ellipse.Style>
+                            </Ellipse>
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding LocalDeviceName}"
+                                       FontSize="13.5"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"
+                                       TextTrimming="CharacterEllipsis" />
+                        </Grid>
+
+                        <Button Command="{Binding CopyLocalAddressCommand}"
+                                Style="{StaticResource GhostButtonStyle}"
+                                HorizontalContentAlignment="Left"
+                                Padding="4,4"
+                                Margin="-4,4,-4,0"
+                                ToolTip="{x:Static app:UiText.BtnCopyAddress}">
+                            <Grid HorizontalAlignment="Stretch">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{Binding LocalAddressSummary}"
+                                           FontFamily="{StaticResource MonoFont}"
+                                           FontSize="12"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                           TextTrimming="CharacterEllipsis"
+                                           VerticalAlignment="Center" />
+                                <Path Grid.Column="1"
+                                      Data="{StaticResource IconCopy}"
+                                      Stroke="{DynamicResource TextMutedBrush}"
+                                      StrokeThickness="1.5"
+                                      Stretch="Uniform"
+                                      Width="12" Height="12"
+                                      Margin="8,0,0,0"
+                                      Visibility="{Binding HasNetwork, Converter={StaticResource BoolToVis}}" />
+                            </Grid>
+                        </Button>
+
+                        <Grid Margin="0,9,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="8" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0"
+                                    Style="{StaticResource TonalButtonStyle}"
+                                    Command="{Binding OpenQrPairingCommand}"
+                                    Padding="8,6"
+                                    MinHeight="32">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Data="{StaticResource IconQr}"
+                                          Stroke="{DynamicResource AccentBrush}"
+                                          StrokeThickness="1.6"
+                                          Stretch="Uniform"
+                                          Width="13" Height="13"
+                                          Margin="0,0,6,0" />
+                                    <TextBlock Text="{x:Static app:UiText.BtnQrPair}" FontSize="12.5" />
+                                </StackPanel>
+                            </Button>
+                            <Button Grid.Column="2"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Command="{Binding OpenManualConnectCommand}"
+                                    Padding="8,6"
+                                    MinHeight="32">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Data="{StaticResource IconManual}"
+                                          Stroke="{DynamicResource TextSecondaryBrush}"
+                                          StrokeThickness="1.6"
+                                          Stretch="Uniform"
+                                          Width="13" Height="13"
+                                          Margin="0,0,6,0" />
+                                    <TextBlock Text="{x:Static app:UiText.BtnManualConnect}" FontSize="12.5" />
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- 发现与已信任设备列表 -->
+                <Grid Grid.Row="2" Margin="14,2,14,8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="{x:Static app:UiText.SectionNearbyDevices}"
+                               FontSize="11.5"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextMutedBrush}"
+                               Margin="4,0,4,8" />
+
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <ItemsControl ItemsSource="{Binding Devices}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button Command="{Binding DataContext.SelectDeviceCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                CommandParameter="{Binding}"
+                                                Cursor="Hand"
+                                                Margin="0,0,0,6"
+                                                Padding="0"
+                                                Background="Transparent"
+                                                BorderThickness="0"
+                                                HorizontalContentAlignment="Stretch">
+                                            <Button.Template>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border x:Name="RowCard"
+                                                            CornerRadius="12"
+                                                            Padding="11,10"
+                                                            BorderThickness="1">
+                                                        <Border.Style>
+                                                            <Style TargetType="Border">
+                                                                <Setter Property="Background" Value="Transparent" />
+                                                                <Setter Property="BorderBrush" Value="Transparent" />
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                                        <Setter Property="Background" Value="{DynamicResource AccentSoftBrush}" />
+                                                                        <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+                                                                    </DataTrigger>
+                                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                                        <Setter Property="Background" Value="{DynamicResource SurfaceHoverBrush}" />
+                                                                    </Trigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Border.Style>
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="Auto" />
+                                                                <ColumnDefinition Width="*" />
+                                                            </Grid.ColumnDefinitions>
+
+                                                            <!-- 设备类型矢量图标徽章（Android / Windows / iOS） -->
+                                                            <Border Width="38" Height="38" CornerRadius="11"
+                                                                    Background="{DynamicResource SurfaceBrush}"
+                                                                    BorderBrush="{DynamicResource BorderBrush}"
+                                                                    BorderThickness="1">
+                                                                <Path Data="{Binding DeviceType, Converter={StaticResource DeviceIconConv}}"
+                                                                      Stroke="{Binding DeviceType, Converter={StaticResource DeviceAccentConv}}"
+                                                                      StrokeThickness="1.75"
+                                                                      StrokeStartLineCap="Round"
+                                                                      StrokeEndLineCap="Round"
+                                                                      StrokeLineJoin="Round"
+                                                                      Stretch="Uniform"
+                                                                      Width="18" Height="18"
+                                                                      HorizontalAlignment="Center"
+                                                                      VerticalAlignment="Center" />
+                                                            </Border>
+
+                                                            <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
+                                                                <Grid>
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="*" />
+                                                                        <ColumnDefinition Width="Auto" />
+                                                                    </Grid.ColumnDefinitions>
+                                                                    <TextBlock Text="{Binding DisplayName}"
+                                                                               FontSize="13.5"
+                                                                               FontWeight="SemiBold"
+                                                                               Foreground="{DynamicResource TextPrimaryBrush}"
+                                                                               TextTrimming="CharacterEllipsis" />
+                                                                    <Border Grid.Column="1" CornerRadius="6" Padding="6,1.5" Margin="6,0,0,0" VerticalAlignment="Center">
+                                                                        <Border.Style>
+                                                                            <Style TargetType="Border">
+                                                                                <Setter Property="Background" Value="{DynamicResource SurfaceSubtleBrush}" />
+                                                                                <Style.Triggers>
+                                                                                    <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                                                                        <Setter Property="Background" Value="{DynamicResource SuccessSoftBrush}" />
+                                                                                    </DataTrigger>
+                                                                                    <MultiDataTrigger>
+                                                                                        <MultiDataTrigger.Conditions>
+                                                                                            <Condition Binding="{Binding IsConnected}" Value="False" />
+                                                                                            <Condition Binding="{Binding IsTrusted}" Value="True" />
+                                                                                        </MultiDataTrigger.Conditions>
+                                                                                        <Setter Property="Background" Value="{DynamicResource AccentSoftBrush}" />
+                                                                                    </MultiDataTrigger>
+                                                                                </Style.Triggers>
+                                                                            </Style>
+                                                                        </Border.Style>
+                                                                        <TextBlock Text="{Binding BadgeText}" FontSize="10.5" FontWeight="SemiBold">
+                                                                            <TextBlock.Style>
+                                                                                <Style TargetType="TextBlock">
+                                                                                    <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}" />
+                                                                                    <Style.Triggers>
+                                                                                        <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                                                                            <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}" />
+                                                                                        </DataTrigger>
+                                                                                        <MultiDataTrigger>
+                                                                                            <MultiDataTrigger.Conditions>
+                                                                                                <Condition Binding="{Binding IsConnected}" Value="False" />
+                                                                                                <Condition Binding="{Binding IsTrusted}" Value="True" />
+                                                                                            </MultiDataTrigger.Conditions>
+                                                                                            <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+                                                                                        </MultiDataTrigger>
+                                                                                    </Style.Triggers>
+                                                                                </Style>
+                                                                            </TextBlock.Style>
+                                                                        </TextBlock>
+                                                                    </Border>
+                                                                </Grid>
+                                                                <TextBlock Text="{Binding IpText}"
+                                                                           FontFamily="{StaticResource MonoFont}"
+                                                                           FontSize="11.5"
+                                                                           Foreground="{DynamicResource TextMutedBrush}"
+                                                                           Margin="0,2,0,0"
+                                                                           TextTrimming="CharacterEllipsis" />
+                                                            </StackPanel>
+                                                        </Grid>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Button.Template>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <!-- 无设备发现时的柔和提示 -->
+                            <Border Visibility="{Binding HasDevices, Converter={StaticResource InvertBoolToVis}}"
+                                    Style="{StaticResource SubtleCardStyle}"
+                                    Padding="16,22"
+                                    Margin="0,4,0,0">
+                                <StackPanel HorizontalAlignment="Center">
+                                    <Path Data="{StaticResource IconManual}"
+                                          Stroke="{DynamicResource TextMutedBrush}"
+                                          StrokeThickness="1.5"
+                                          Stretch="Uniform"
+                                          Width="24" Height="24"
+                                          HorizontalAlignment="Center"
+                                          Opacity="0.7" />
+                                    <TextBlock Text="{x:Static app:UiText.LabelScanningDevices}"
+                                               FontSize="12.5"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"
+                                               TextAlignment="Center"
+                                               TextWrapping="Wrap"
+                                               Margin="0,10,0,0" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+
+                <!-- 底部主导航：传输记录 / 设置 -->
+                <Border Grid.Row="3"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="0,1,0,0"
+                        Padding="12,10">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="6" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Button Grid.Column="0"
+                                Command="{Binding OpenHistoryCommand}"
+                                Cursor="Hand"
+                                Background="Transparent"
+                                BorderThickness="0">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border CornerRadius="10" Padding="10,9">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background" Value="Transparent" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsHistoryPage}" Value="True">
+                                                        <Setter Property="Background" Value="{DynamicResource AccentSoftBrush}" />
+                                                    </DataTrigger>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Background" Value="{DynamicResource SurfaceHoverBrush}" />
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                            <Path Data="{StaticResource IconHistory}"
+                                                  Stroke="{DynamicResource TextSecondaryBrush}"
+                                                  StrokeThickness="1.7"
+                                                  Stretch="Uniform"
+                                                  Width="15" Height="15"
+                                                  Margin="0,0,7,0" />
+                                            <TextBlock Text="{x:Static app:UiText.NavHistory}"
+                                                       FontSize="13"
+                                                       FontWeight="Medium"
+                                                       Foreground="{DynamicResource TextPrimaryBrush}" />
+                                            <Border Visibility="{Binding HasUnfinished, Converter={StaticResource BoolToVis}}"
+                                                    Background="{DynamicResource AccentBrush}"
+                                                    CornerRadius="8"
+                                                    Padding="5,0.5"
+                                                    Margin="6,0,0,0"
+                                                    VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding UnfinishedCount}"
+                                                           FontSize="10.5"
+                                                           FontWeight="Bold"
+                                                           Foreground="#FFFFFF" />
+                                            </Border>
+                                        </StackPanel>
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+
+                        <Button Grid.Column="2"
+                                Command="{Binding OpenSettingsCommand}"
+                                Cursor="Hand"
+                                Background="Transparent"
+                                BorderThickness="0">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border CornerRadius="10" Padding="10,9">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background" Value="Transparent" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsSettingsPage}" Value="True">
+                                                        <Setter Property="Background" Value="{DynamicResource AccentSoftBrush}" />
+                                                    </DataTrigger>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Background" Value="{DynamicResource SurfaceHoverBrush}" />
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                            <Path Data="{StaticResource IconSettings}"
+                                                  Stroke="{DynamicResource TextSecondaryBrush}"
+                                                  StrokeThickness="1.7"
+                                                  Stretch="Uniform"
+                                                  Width="15" Height="15"
+                                                  Margin="0,0,7,0" />
+                                            <TextBlock Text="{x:Static app:UiText.NavSettings}"
+                                                       FontSize="13"
+                                                       FontWeight="Medium"
+                                                       Foreground="{DynamicResource TextPrimaryBrush}" />
+                                            <Ellipse Width="7" Height="7"
+                                                     Fill="{DynamicResource WarningBrush}"
+                                                     Margin="6,0,0,0"
+                                                     VerticalAlignment="Center"
+                                                     Visibility="{Binding FirewallWarning, Converter={StaticResource BoolToVis}}" />
+                                        </StackPanel>
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- 右侧主内容区 -->
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!-- 顶部系统/网络/安全状态横幅集合 -->
+            <StackPanel Grid.Row="0" Margin="18,12,18,0">
+                <!-- 防火墙缺失或阻止规则 -->
+                <Border Visibility="{Binding FirewallWarning, Converter={StaticResource BoolToVis}}"
+                        Background="{DynamicResource WarningSoftBrush}"
+                        BorderBrush="{DynamicResource WarningBrush}"
+                        BorderThickness="1"
+                        CornerRadius="10"
+                        Padding="14,9"
+                        Margin="0,0,0,8">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Path Data="{StaticResource IconWarning}"
+                              Stroke="{DynamicResource WarningBrush}"
+                              StrokeThickness="1.8"
+                              Stretch="Uniform"
+                              Width="16" Height="16"
+                              VerticalAlignment="Center"
+                              Margin="0,0,10,0" />
+                        <TextBlock Grid.Column="1"
+                                   Text="{x:Static app:UiText.BannerFirewall}"
+                                   FontSize="12.5"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"
+                                   TextWrapping="Wrap"
+                                   VerticalAlignment="Center" />
+                        <Button Grid.Column="2"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Content="{x:Static app:UiText.BtnRepairFirewall}"
+                                Command="{Binding RepairFirewallCommand}"
+                                Padding="12,5"
+                                MinHeight="28"
+                                Margin="12,0,0,0" />
+                    </Grid>
+                </Border>
+
+                <!-- 无可用局域网 -->
+                <Border Visibility="{Binding HasNetwork, Converter={StaticResource InvertBoolToVis}}"
+                        Background="{DynamicResource WarningSoftBrush}"
+                        BorderBrush="{DynamicResource WarningBrush}"
+                        BorderThickness="1"
+                        CornerRadius="10"
+                        Padding="14,9"
+                        Margin="0,0,0,8">
+                    <TextBlock Text="{x:Static app:UiText.BannerNoNetwork}"
+                               FontSize="12.5"
+                               Foreground="{DynamicResource TextPrimaryBrush}"
+                               TextWrapping="Wrap" />
+                </Border>
+
+                <!-- 发现服务不可用 -->
+                <Border Visibility="{Binding DiscoveryUnavailable, Converter={StaticResource BoolToVis}}"
+                        Background="{DynamicResource WarningSoftBrush}"
+                        BorderBrush="{DynamicResource WarningBrush}"
+                        BorderThickness="1"
+                        CornerRadius="10"
+                        Padding="14,9"
+                        Margin="0,0,0,8">
+                    <TextBlock Text="{x:Static app:UiText.BannerDiscoveryUnavailable}"
+                               FontSize="12.5"
+                               Foreground="{DynamicResource TextPrimaryBrush}"
+                               TextWrapping="Wrap" />
+                </Border>
+
+                <!-- TCP 监听失败 -->
+                <Border Visibility="{Binding ListenFailed, Converter={StaticResource BoolToVis}}"
+                        Background="{DynamicResource DangerSoftBrush}"
+                        BorderBrush="{DynamicResource DangerBrush}"
+                        BorderThickness="1"
+                        CornerRadius="10"
+                        Padding="14,9"
+                        Margin="0,0,0,8">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="{x:Static app:UiText.BannerListenFailed}"
+                                   FontSize="12.5"
+                                   Foreground="{DynamicResource DangerBrush}"
+                                   TextWrapping="Wrap"
+                                   VerticalAlignment="Center" />
+                        <Button Grid.Column="1"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Content="{x:Static app:UiText.BtnRetry}"
+                                Command="{Binding RetryStartNetworkingCommand}"
+                                Padding="12,4"
+                                MinHeight="28"
+                                Margin="10,0,0,0" />
+                    </Grid>
+                </Border>
+
+                <!-- 身份损坏重建 -->
+                <Border Visibility="{Binding IdentityReset, Converter={StaticResource BoolToVis}}"
+                        Background="{DynamicResource WarningSoftBrush}"
+                        BorderBrush="{DynamicResource WarningBrush}"
+                        BorderThickness="1"
+                        CornerRadius="10"
+                        Padding="14,9"
+                        Margin="0,0,0,8">
+                    <TextBlock Text="{x:Static app:UiText.BannerIdentityReset}"
+                               FontSize="12.5"
+                               Foreground="{DynamicResource TextPrimaryBrush}"
+                               TextWrapping="Wrap" />
+                </Border>
+
+                <!-- 身份无法保存 -->
+                <Border Visibility="{Binding IdentitySaveFailed, Converter={StaticResource BoolToVis}}"
+                        Background="{DynamicResource DangerSoftBrush}"
+                        BorderBrush="{DynamicResource DangerBrush}"
+                        BorderThickness="1"
+                        CornerRadius="10"
+                        Padding="14,9"
+                        Margin="0,0,0,8">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="{x:Static app:UiText.BannerIdentitySaveFailed}"
+                                   FontSize="12.5"
+                                   Foreground="{DynamicResource DangerBrush}"
+                                   TextWrapping="Wrap"
+                                   VerticalAlignment="Center" />
+                        <Button Grid.Column="1"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Content="{x:Static app:UiText.BtnRetry}"
+                                Command="{Binding RetryStartNetworkingCommand}"
+                                Padding="12,4"
+                                MinHeight="28"
+                                Margin="10,0,0,0" />
+                    </Grid>
+                </Border>
+
+                <!-- 系统通知未开启 -->
+                <Border Visibility="{Binding NotificationsOff, Converter={StaticResource BoolToVis}}"
+                        Background="{DynamicResource AccentSoftBrush}"
+                        BorderBrush="{DynamicResource AccentBrush}"
+                        BorderThickness="1"
+                        CornerRadius="10"
+                        Padding="14,9"
+                        Margin="0,0,0,8">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="{x:Static app:UiText.BannerNotificationsOff}"
+                                   FontSize="12.5"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"
+                                   TextWrapping="Wrap"
+                                   VerticalAlignment="Center" />
+                        <Button Grid.Column="1"
+                                Style="{StaticResource TonalButtonStyle}"
+                                Content="{x:Static app:UiText.BtnOpenNotificationSettings}"
+                                Command="{Binding OpenNotificationSettingsCommand}"
+                                Padding="12,4"
+                                MinHeight="28"
+                                Margin="10,0,0,0" />
+                    </Grid>
+                </Border>
+
+                <!-- 历史存储异常 -->
+                <Border Visibility="{Binding HistoryStoreFailed, Converter={StaticResource BoolToVis}}"
+                        Background="{DynamicResource DangerSoftBrush}"
+                        BorderBrush="{DynamicResource DangerBrush}"
+                        BorderThickness="1"
+                        CornerRadius="10"
+                        Padding="14,9"
+                        Margin="0,0,0,8">
+                    <TextBlock Text="{x:Static app:UiText.BannerHistoryStoreFailed}"
+                               FontSize="12.5"
+                               Foreground="{DynamicResource DangerBrush}"
+                               TextWrapping="Wrap" />
+                </Border>
+            </StackPanel>
+
+            <!-- 页面路由区 -->
+            <Grid Grid.Row="1">
+                <!-- 欢迎概览页 -->
+                <Grid Visibility="{Binding IsOverviewPage, Converter={StaticResource BoolToVis}}"
+                      Margin="36,24">
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="560">
+                        <Border Width="68" Height="68" CornerRadius="20"
+                                Background="{DynamicResource AccentSoftBrush}"
+                                HorizontalAlignment="Center">
+                            <Path Data="{StaticResource IconShield}"
+                                  Stroke="{DynamicResource AccentBrush}"
+                                  StrokeThickness="1.9"
+                                  StrokeStartLineCap="Round"
+                                  StrokeEndLineCap="Round"
+                                  StrokeLineJoin="Round"
+                                  Stretch="Uniform"
+                                  Width="34" Height="34"
+                                  HorizontalAlignment="Center"
+                                  VerticalAlignment="Center" />
+                        </Border>
+
+                        <TextBlock Text="{x:Static app:UiText.LabelWelcomeTitle}"
+                                   FontSize="24"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"
+                                   TextAlignment="Center"
+                                   Margin="0,20,0,0" />
+
+                        <TextBlock Text="{x:Static app:UiText.LabelWelcomeDesc}"
+                                   FontSize="14"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   TextAlignment="Center"
+                                   TextWrapping="Wrap"
+                                   LineHeight="22"
+                                   Margin="0,10,0,0" />
+
+                        <Border Background="{DynamicResource SuccessSoftBrush}"
+                                CornerRadius="999"
+                                Padding="14,6"
+                                HorizontalAlignment="Center"
+                                Margin="0,16,0,28">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Data="{StaticResource IconCheck}"
+                                      Stroke="{DynamicResource SuccessBrush}"
+                                      StrokeThickness="2"
+                                      Stretch="Uniform"
+                                      Width="12" Height="12"
+                                      Margin="0,0,7,0" />
+                                <TextBlock Text="{x:Static app:UiText.LabelEncryptedHint}"
+                                           FontSize="12"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource SuccessBrush}" />
+                            </StackPanel>
+                        </Border>
+
+                        <UniformGrid Columns="3">
+                            <Button Style="{StaticResource SecondaryButtonStyle}"
+                                    Command="{Binding OpenQrPairingCommand}"
+                                    Margin="0,0,8,0"
+                                    Padding="16,18"
+                                    MinHeight="92">
+                                <StackPanel HorizontalAlignment="Center">
+                                    <Path Data="{StaticResource IconQr}"
+                                          Stroke="{DynamicResource AccentBrush}"
+                                          StrokeThickness="1.8"
+                                          Stretch="Uniform"
+                                          Width="24" Height="24"
+                                          HorizontalAlignment="Center" />
+                                    <TextBlock Text="{x:Static app:UiText.BtnQrPair}"
+                                               FontSize="13.5"
+                                               FontWeight="SemiBold"
+                                               Margin="0,10,0,0" />
+                                </StackPanel>
+                            </Button>
+
+                            <Button Style="{StaticResource SecondaryButtonStyle}"
+                                    Command="{Binding OpenManualConnectCommand}"
+                                    Margin="4,0"
+                                    Padding="16,18"
+                                    MinHeight="92">
+                                <StackPanel HorizontalAlignment="Center">
+                                    <Path Data="{StaticResource IconManual}"
+                                          Stroke="{DynamicResource AccentBrush}"
+                                          StrokeThickness="1.8"
+                                          Stretch="Uniform"
+                                          Width="24" Height="24"
+                                          HorizontalAlignment="Center" />
+                                    <TextBlock Text="{x:Static app:UiText.BtnManualConnect}"
+                                               FontSize="13.5"
+                                               FontWeight="SemiBold"
+                                               Margin="0,10,0,0" />
+                                </StackPanel>
+                            </Button>
+
+                            <Button Style="{StaticResource SecondaryButtonStyle}"
+                                    Command="{Binding OpenHistoryCommand}"
+                                    Margin="8,0,0,0"
+                                    Padding="16,18"
+                                    MinHeight="92">
+                                <StackPanel HorizontalAlignment="Center">
+                                    <Path Data="{StaticResource IconHistory}"
+                                          Stroke="{DynamicResource AccentBrush}"
+                                          StrokeThickness="1.8"
+                                          Stretch="Uniform"
+                                          Width="24" Height="24"
+                                          HorizontalAlignment="Center" />
+                                    <TextBlock Text="{x:Static app:UiText.NavHistory}"
+                                               FontSize="13.5"
+                                               FontWeight="SemiBold"
+                                               Margin="0,10,0,0" />
+                                </StackPanel>
+                            </Button>
+                        </UniformGrid>
+                    </StackPanel>
+                </Grid>
+
+                <!-- 对端会话页 -->
+                <views:ConversationView DataContext="{Binding ActiveConversation}"
+                                        Visibility="{Binding DataContext.IsConversationPage, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVis}}" />
+
+                <!-- 传输记录页 -->
+                <views:HistoryView DataContext="{Binding History}"
+                                   Visibility="{Binding DataContext.IsHistoryPage, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVis}}" />
+
+                <!-- 设置页 -->
+                <views:SettingsView DataContext="{Binding Settings}"
+                                    Visibility="{Binding DataContext.IsSettingsPage, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVis}}" />
+            </Grid>
+
+            <!-- 底部浮动轻提示 Toast（无障碍 Polite LiveRegion） -->
+            <Border Grid.Row="1"
+                    Visibility="{Binding HasToast, Converter={StaticResource BoolToVis}}"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Bottom"
+                    Margin="24,0,24,26"
+                    Background="{DynamicResource ToastBgBrush}"
+                    CornerRadius="999"
+                    Padding="18,10"
+                    IsHitTestVisible="False">
+                <Border.Effect>
+                    <DropShadowEffect Color="#000000" BlurRadius="20" ShadowDepth="4" Opacity="0.22" />
+                </Border.Effect>
+                <TextBlock Text="{Binding ToastMessage}"
+                           Foreground="{DynamicResource ToastFgBrush}"
+                           FontSize="13"
+                           FontWeight="Medium"
+                           AutomationProperties.LiveSetting="Polite" />
+            </Border>
+        </Grid>
+    </Grid>
+</Window>

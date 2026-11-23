@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Windows 平台适配：Win32 / COM / Windows App SDK、SQLite 存储、DPAPI；唯一允许调用系统 API 与创建套接字的层 -->
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <!-- 最低支持 Windows 10 1809（需求 1.2） -->
+    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" />
+    <!-- 只使用 AppNotifications；部署方式（WindowsPackageType=None、自包含）由 LanTransfer.App 决定 -->
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LanTransfer.Engine\LanTransfer.Engine.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="LanTransfer.Platform.Windows.Tests" />
+  </ItemGroup>
+</Project>

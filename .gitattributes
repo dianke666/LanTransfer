@@ -1,0 +1,33 @@
+# 默认：文本文件在仓库中以 LF 存储，检出时也使用 LF（不受 core.autocrlf 影响）
+* text=auto eol=lf
+
+# Windows 专用脚本与解决方案文件使用 CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.sln text eol=crlf
+
+# 协议测试向量与界面文案表：按字节原样存取，不做任何换行转换
+# （-text 关闭换行处理，但仍按文本显示 diff）
+protocol/test-vectors/** -text
+*.tsv -text
+
+# 二进制文件
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.bmp binary
+*.ico binary
+*.ttf binary
+*.otf binary
+*.jar binary
+*.zip binary
+*.apk binary
+*.aab binary
+*.exe binary
+*.dll binary
+*.so binary
+*.db binary
+*.sqlite binary
+*.pdf binary

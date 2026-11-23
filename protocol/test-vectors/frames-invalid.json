@@ -1,0 +1,125 @@
+{
+  "description": "各类解码错误；version 为解码器使用的协商版本",
+  "protocol_version": "1.0",
+  "vectors": [
+    {
+      "name": "帧头 magic 错误",
+      "version": "1.0",
+      "bytes": "4c550300000000",
+      "error": "BAD_MAGIC",
+      "messages_before_error": 0
+    },
+    {
+      "name": "合法 HEARTBEAT 之后 magic 错误",
+      "version": "1.0",
+      "bytes": "4c54030000000000000300000000",
+      "error": "BAD_MAGIC",
+      "messages_before_error": 1
+    },
+    {
+      "name": "未定义的类型 0x04",
+      "version": "1.0",
+      "bytes": "4c540400000000",
+      "error": "UNKNOWN_TYPE",
+      "messages_before_error": 0
+    },
+    {
+      "name": "未定义的类型 0xFF",
+      "version": "1.0",
+      "bytes": "4c54ff00000000",
+      "error": "UNKNOWN_TYPE",
+      "messages_before_error": 0
+    },
+    {
+      "name": "length 为 MAX_PAYLOAD + 1（只有帧头）",
+      "version": "1.0",
+      "bytes": "4c542000200001",
+      "error": "PAYLOAD_TOO_LARGE",
+      "messages_before_error": 0
+    },
+    {
+      "name": "length 为 0xFFFFFFFF（只有帧头）",
+      "version": "1.0",
+      "bytes": "4c5403ffffffff",
+      "error": "PAYLOAD_TOO_LARGE",
+      "messages_before_error": 0
+    },
+    {
+      "name": "SESSION_RESULT 缺少必需字段",
+      "version": "1.0",
+      "bytes": "4c540100000000",
+      "error": "MALFORMED_PAYLOAD",
+      "messages_before_error": 0
+    },
+    {
+      "name": "tag 不递增",
+      "version": "1.0",
+      "bytes": "4c54020000000c050000000100010000000100",
+      "error": "MALFORMED_PAYLOAD",
+      "messages_before_error": 0
+    },
+    {
+      "name": "同一 tag 出现两次",
+      "version": "1.0",
+      "bytes": "4c54020000000c010000000100010000000100",
+      "error": "MALFORMED_PAYLOAD",
+      "messages_before_error": 0
+    },
+    {
+      "name": "枚举值未定义",
+      "version": "1.0",
+      "bytes": "4c540100000006010000000109",
+      "error": "MALFORMED_PAYLOAD",
+      "messages_before_error": 0
+    },
+    {
+      "name": "定长字段长度不符",
+      "version": "1.0",
+      "bytes": "4c542100000014010000000f000102030405060708090a0b0c0d0e",
+      "error": "MALFORMED_PAYLOAD",
+      "messages_before_error": 0
+    },
+    {
+      "name": "字段长度越过缓冲区",
+      "version": "1.0",
+      "bytes": "4c540100000006010000000500",
+      "error": "MALFORMED_PAYLOAD",
+      "messages_before_error": 0
+    },
+    {
+      "name": "字段头被截断",
+      "version": "1.0",
+      "bytes": "4c540100000003010000",
+      "error": "MALFORMED_PAYLOAD",
+      "messages_before_error": 0
+    },
+    {
+      "name": "TEXT 缺少 text 字段",
+      "version": "1.0",
+      "bytes": "4c5420000000220100000010000102030405060708090a0b0c0d0e0f02000000080000000000000000",
+      "error": "MALFORMED_PAYLOAD",
+      "messages_before_error": 0
+    },
+    {
+      "name": "FILE_OFFER 文件名不是合法 UTF-8",
+      "version": "1.0",
+      "bytes": "4c54300000003b0100000010404142434445464748494a4b4c4d4e4f020000002100000001000000140100000002c080020000000800000000000000000300000000",
+      "error": "MALFORMED_PAYLOAD",
+      "messages_before_error": 0
+    },
+    {
+      "name": "List 元素之后有多余字节",
+      "version": "1.0",
+      "bytes": "4c54300000001f0100000010404142434445464748494a4b4c4d4e4f02000000050000000001",
+      "error": "MALFORMED_PAYLOAD",
+      "messages_before_error": 0
+    },
+    {
+      "name": "FILE_CHUNK data 为空",
+      "version": "1.0",
+      "bytes": "4c5432000000300100000010000102030405060708090a0b0c0d0e0f020000000400000000030000000800000000000000000400000000",
+      "error": "MALFORMED_PAYLOAD",
+      "messages_before_error": 0
+    }
+  ]
+}

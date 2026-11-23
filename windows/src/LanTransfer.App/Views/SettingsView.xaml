@@ -1,0 +1,212 @@
+<UserControl x:Class="LanTransfer.App.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:LanTransfer.App"
+             xmlns:conv="clr-namespace:LanTransfer.App.Converters"
+             Background="{DynamicResource CanvasBrush}"
+             FontFamily="{StaticResource AppFont}">
+    <UserControl.Resources>
+        <conv:BoolToVisibilityConverter x:Key="BoolVis" />
+        <conv:BoolToVisibilityConverter x:Key="InvBoolVis" Invert="True" />
+        <conv:StringNotEmptyToVisibilityConverter x:Key="StrVis" />
+        <conv:DeviceTypeToGeometryConverter x:Key="DevIcon" />
+        <conv:DeviceTypeToAccentBrushConverter x:Key="DevBrush" />
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,22">
+        <StackPanel MaxWidth="760">
+            <TextBlock Text="{x:Static local:UiText.NavSettings}" FontSize="22" FontWeight="SemiBold"
+                       Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,20" />
+
+            <!-- 外观主题 -->
+            <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,14">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="{x:Static local:UiText.SectionAppearance}" FontSize="15" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimaryBrush}" />
+                    </StackPanel>
+                    <Border Grid.Column="1" Background="{DynamicResource SurfaceSubtleBrush}" BorderBrush="{DynamicResource BorderBrush}"
+                            BorderThickness="1" CornerRadius="10" Padding="3">
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="{x:Static local:UiText.ThemeSystem}" Command="{Binding SetThemeCommand}" CommandParameter="system" Padding="12,5">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource GhostButtonStyle}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsThemeSystem}" Value="True">
+                                                <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
+                                                <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+                                                <Setter Property="FontWeight" Value="SemiBold" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                            <Button Content="{x:Static local:UiText.ThemeLight}" Command="{Binding SetThemeCommand}" CommandParameter="light" Padding="12,5">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource GhostButtonStyle}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsThemeLight}" Value="True">
+                                                <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
+                                                <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+                                                <Setter Property="FontWeight" Value="SemiBold" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                            <Button Content="{x:Static local:UiText.ThemeDark}" Command="{Binding SetThemeCommand}" CommandParameter="dark" Padding="12,5">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource GhostButtonStyle}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsThemeDark}" Value="True">
+                                                <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
+                                                <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+                                                <Setter Property="FontWeight" Value="SemiBold" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- 本机设备名称 -->
+            <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,14">
+                <StackPanel>
+                    <TextBlock Text="{x:Static local:UiText.LabelDeviceName}" FontSize="15" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,10" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox Style="{StaticResource ModernTextBoxStyle}" Text="{Binding DeviceNameInput, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,0,10,0" />
+                        <Button Grid.Column="1" Content="{x:Static local:UiText.BtnSave}" Style="{StaticResource PrimaryButtonStyle}"
+                                Command="{Binding SaveDeviceNameCommand}" />
+                    </Grid>
+                    <TextBlock Text="{Binding NameError}" FontSize="12" Foreground="{DynamicResource DangerBrush}"
+                               Margin="2,6,0,0" Visibility="{Binding NameError, Converter={StaticResource StrVis}}" />
+                </StackPanel>
+            </Border>
+
+            <!-- 接收目录与自动复制 -->
+            <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,14">
+                <StackPanel>
+                    <TextBlock Text="{x:Static local:UiText.SectionTransferPrefs}" FontSize="15" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,14" />
+
+                    <TextBlock Text="{x:Static local:UiText.LabelReceiveDir}" FontSize="13" FontWeight="Medium"
+                               Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6" />
+                    <Border Background="{DynamicResource SurfaceSubtleBrush}" BorderBrush="{DynamicResource BorderBrush}"
+                            BorderThickness="1" CornerRadius="10" Padding="12,9" Margin="0,0,0,10">
+                        <TextBlock Text="{Binding ReceiveDirDisplay}" FontFamily="{StaticResource MonoFont}" FontSize="12.5"
+                                   Foreground="{DynamicResource TextPrimaryBrush}" TextWrapping="Wrap" />
+                    </Border>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                        <Button Content="{x:Static local:UiText.BtnChangeDir}" Style="{StaticResource SecondaryButtonStyle}"
+                                Command="{Binding ChooseReceiveDirectoryCommand}" Margin="0,0,8,0" />
+                        <Button Content="{x:Static local:UiText.BtnOpenReceiveDir}" Style="{StaticResource TonalButtonStyle}"
+                                Command="{Binding OpenReceiveDirectoryCommand}" />
+                    </StackPanel>
+                    <TextBlock Text="{Binding DirError}" FontSize="12" Foreground="{DynamicResource DangerBrush}"
+                               Margin="2,2,0,8" Visibility="{Binding DirError, Converter={StaticResource StrVis}}" />
+
+                    <Border Height="1" Background="{DynamicResource BorderBrush}" Margin="0,10,0,14" />
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="{x:Static local:UiText.LabelAutoCopy}" FontSize="13.5" FontWeight="Medium"
+                                       Foreground="{DynamicResource TextPrimaryBrush}" />
+                            <TextBlock Text="{x:Static local:UiText.LabelAutoCopyDesc}" FontSize="12"
+                                       Foreground="{DynamicResource TextMutedBrush}" Margin="0,3,0,0" />
+                        </StackPanel>
+                        <CheckBox Grid.Column="1" Style="{StaticResource FluentToggleStyle}" IsChecked="{Binding AutoCopy}" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- 已信任设备（支持 Android / Windows / iOS 图标与自动接收开关） -->
+            <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,14">
+                <StackPanel>
+                    <TextBlock Text="{x:Static local:UiText.SectionTrustedDevices}" FontSize="15" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,12" />
+
+                    <TextBlock Text="{x:Static local:UiText.LabelNoTrustedDevices}" FontSize="13"
+                               Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap"
+                               Visibility="{Binding HasTrustedDevices, Converter={StaticResource InvBoolVis}}" />
+
+                    <ItemsControl ItemsSource="{Binding TrustedDevices}"
+                                  Visibility="{Binding HasTrustedDevices, Converter={StaticResource BoolVis}}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{DynamicResource SurfaceSubtleBrush}" BorderBrush="{DynamicResource BorderBrush}"
+                                        BorderThickness="1" CornerRadius="12" Padding="14,10" Margin="0,0,0,8">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border Width="36" Height="36" CornerRadius="10" Background="{DynamicResource SurfaceBrush}"
+                                                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Margin="0,0,12,0">
+                                            <Path Data="{Binding DeviceType, Converter={StaticResource DevIcon}}"
+                                                  Stroke="{Binding DeviceType, Converter={StaticResource DevBrush}}"
+                                                  StrokeThickness="1.7" Width="18" Height="18" Stretch="Uniform"
+                                                  HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding DisplayName}" FontSize="13.5" FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource TextPrimaryBrush}" />
+                                            <TextBlock Text="{Binding DeviceTypeLabel}" FontSize="12"
+                                                       Foreground="{DynamicResource TextMutedBrush}" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <TextBlock Text="{x:Static local:UiText.LabelAutoAccept}" FontSize="12"
+                                                       Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                            <CheckBox Style="{StaticResource FluentToggleStyle}" IsChecked="{Binding AutoAccept, Mode=TwoWay}"
+                                                      Click="OnAutoAcceptClick" Tag="{Binding}" Margin="0,0,14,0" />
+                                            <Button Content="{x:Static local:UiText.BtnUnpair}" Style="{StaticResource DangerButtonStyle}"
+                                                    Command="{Binding DataContext.UnpairDeviceCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <!-- 网络与防火墙 -->
+            <Border Style="{StaticResource CardBorderStyle}">
+                <StackPanel>
+                    <Grid Margin="0,0,0,10">
+                        <TextBlock Text="{x:Static local:UiText.SectionNetworkFirewall}" FontSize="15" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                        <Button HorizontalAlignment="Right" Content="{x:Static local:UiText.BtnRepairFirewall}"
+                                Style="{StaticResource TonalButtonStyle}" Command="{Binding RepairFirewallCommand}" />
+                    </Grid>
+                    <ItemsControl ItemsSource="{Binding NetworkEndpoints}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}" FontFamily="{StaticResource MonoFont}" FontSize="12.5"
+                                           Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,3" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

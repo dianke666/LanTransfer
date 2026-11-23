@@ -1,0 +1,29 @@
+<Project>
+  <!-- 全部 C# 项目共用的编译设置（设计：技术栈 → Windows_Client） -->
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Deterministic>true</Deterministic>
+    <IsPackable>false</IsPackable>
+    <Product>LanTransfer</Product>
+  </PropertyGroup>
+
+  <!-- 警告即错误：编译器、分析器、MSBuild 与 NuGet 警告都会使构建失败 -->
+  <PropertyGroup>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <MSBuildTreatWarningsAsErrors>true</MSBuildTreatWarningsAsErrors>
+    <!--
+      例外：NuGet 漏洞审计（NU1901–NU1904）的结果取决于外部公告库，同一份提交会随时间由通过变为失败。
+      这几条保持为警告并在构建日志中显示，由人工评估后升级依赖并更新锁文件。
+    -->
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);NU1901;NU1902;NU1903;NU1904</WarningsNotAsErrors>
+  </PropertyGroup>
+
+  <!-- 依赖锁文件：每个项目生成并提交 packages.lock.json；CI（CI=true）中以锁定模式还原，锁文件与项目不符即失败 -->
+  <PropertyGroup>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <RestoreLockedMode Condition="'$(CI)' == 'true'">true</RestoreLockedMode>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+</Project>

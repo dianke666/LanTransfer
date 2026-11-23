@@ -1,0 +1,47 @@
+# Windows 安装程序工作流：win-x64 自包含 + ReadyToRun 发布 LanTransfer.App 并使用 Inno Setup 6 编译安装包（任务 32.1）。
+name: installer
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  installer:
+    name: publish and package
+    runs-on: windows-latest
+    timeout-minutes: 60
+    env:
+      DOTNET_NOLOGO: "true"
+      DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: windows
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: windows/global.json
+      - name: 自包含发布
+        run: dotnet publish src/LanTransfer.App -c Release -o publish/LanTransfer
+      - name: 编译 Inno Setup 安装程序
+        run: |
+          $iscc = @(
+            "C:\Program Files (x86)\Inno Setup 6\ISCC.exe",
+            "C:\Program Files\Inno Setup 6\ISCC.exe",
+            "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe"
+          ) | Where-Object { Test-Path $_ } | Select-Object -First 1
+          if (-not $iscc) { $iscc = (Get-Command iscc).Source }
+          & $iscc installer/LanTransfer.iss
+      - name: 上传安装包与发布目录
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: LanTransfer-Setup-win-x64
+          path: |
+            windows/installer/Output/*.exe
+            windows/publish/LanTransfer/
+          retention-days: 14

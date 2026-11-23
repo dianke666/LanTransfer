@@ -1,0 +1,251 @@
+key	text	source	status	platform	note
+app_name	局域网传输	1.5	暂定	both	应用显示名称
+app_subtitle	局域网点对点安全快传	C8.1	暂定	both	品牌副标题
+device_type_android	Android	5.3	原文	both	设备类型标识
+device_type_windows	Windows	5.3	原文	both	设备类型标识
+device_type_ios	iOS	C1.3	暂定	both	设备类型标识（预留 iOS）
+nav_devices	附近设备	C8.1	暂定	both	主界面/侧边栏导航
+nav_history	传输记录	20.2	原文	both	历史记录导航
+nav_settings	设置	9.7	原文	both	设置导航
+section_local_device	本机信息	6.1	暂定	both	本机 IP 与端口区域标题
+section_nearby_devices	局域网设备	5.3	暂定	both	自动发现的设备列表标题
+section_trusted_devices	已信任设备	9.7	原文	both	已配对设备管理区域标题
+section_appearance	外观主题	C8.1	暂定	both	主题切换区域标题
+section_transfer_prefs	传输与剪贴板	C8.1	暂定	both	传输设置区域标题
+section_background_prefs	后台与通知	21.2	暂定	android	Android 后台设置区域标题
+section_network_firewall	网络与防火墙	3.8	暂定	windows	Windows 网络与防火墙区域标题
+theme_system	跟随系统	C8.1	暂定	both	主题模式：自动
+theme_light	浅色	C8.1	暂定	both	主题模式：浅色
+theme_dark	深色	C8.1	暂定	both	主题模式：深色
+label_ip_address	IP 地址	6.2	原文	both	本机或手动连接 IP 标签
+label_port	端口	6.2	原文	both	端口标签
+label_port_optional	端口（留空默认 42580）	6.3	暂定	both	手动连接端口输入框提示
+label_device_name	设备显示名称	4.4	原文	both	设备改名标签
+label_receive_dir	接收目录	16.3	原文	both	接收目录标签
+label_default_receive_dir	默认（下载/LanTransfer）	16.1	暂定	both	默认接收目录显示
+label_auto_copy	自动复制收到的文字	13.8	原文	both	自动复制开关标题
+label_auto_copy_desc	收到新文字消息时自动写入系统剪贴板	13.8	暂定	both	自动复制开关说明
+label_auto_accept	自动接收文件	15.2	原文	both	按已信任设备的自动接收开关
+label_background_receive	后台接收	21.2	原文	android	Android 后台接收开关
+label_background_receive_desc	切至后台或锁屏后持续保持发现与接收	21.2	暂定	android	后台接收开关说明
+label_trusted_badge	已信任	5.3	暂定	both	设备列表中的信任徽章
+label_connected_badge	已连接	C8.1	暂定	both	已建立加密会话徽章
+label_untrusted_badge	未配对	5.3	暂定	both	未配对设备标签
+label_encrypted_hint	端到端加密 · 仅限本地网络	2.1	暂定	both	安全连接副标题
+label_direction_send	发送	20.1	原文	both	传输方向
+label_direction_receive	接收	20.1	原文	both	传输方向
+label_file_count	共 {count} 个文件	15.1	暂定	both	文件数量摘要
+label_total_size	总大小 {size}	15.1	暂定	both	总大小摘要
+label_pending_files	待发送列表（{count}）	14.1	暂定	both	待发送列表标题
+label_speed	速率 {speed}	18.1	暂定	both	传输速率标签
+label_eta	剩余 {eta}	18.1	暂定	both	预计剩余时间标签
+label_eta_unknown	未知	18.1	原文	both	速率为 0 时的预计剩余时间
+label_listen_port	监听端口 {port}	6.1	暂定	both	当前监听端口展示
+label_not_listening	未监听	5.9	暂定	both	传输服务未监听状态
+label_search_history	搜索文件名、设备名或文字内容	C8.1	暂定	both	历史搜索框提示
+label_filter_all	全部	C8.1	暂定	both	历史筛选：全部
+label_filter_text	文字	C8.1	暂定	both	历史筛选：文字
+label_filter_file	文件	C8.1	暂定	both	历史筛选：文件
+label_message_placeholder	输入要发送的文字，完整保留换行与特殊字符…	11.1	暂定	both	消息输入框占位符
+label_drop_hint	松开鼠标即可添加至待发送列表	14.2	暂定	windows	拖放文件蒙层提示
+label_welcome_title	开始局域网极速互传	C8.1	暂定	both	主界面空态欢迎标题
+label_welcome_desc	在左侧选择同一局域网内的设备即可发送文字或文件，所有数据仅在本地传输，不消耗流量。	2.1	暂定	windows	Windows 主界面空态说明
+label_scanning_devices	正在扫描同一局域网内的设备…	5.1	暂定	both	设备列表空态提示
+label_no_trusted_devices	暂无已信任设备，可通过点选设备、扫码或手动输入地址配对。	9.7	暂定	both	设置中已信任设备空态
+label_no_history	暂无传输记录	20.2	暂定	both	历史界面空态
+label_no_messages	暂无消息，发送一段文字或选择文件开始传输吧	C8.1	暂定	both	会话界面空态
+label_pair_code_hint	请核对双方屏幕上显示的 6 位验证码是否一致	7.2	暂定	both	验证码核对说明
+label_qr_hint	使用手机端“扫描二维码”扫描下方二维码即可完成配对	8.1	暂定	both	二维码界面说明
+label_qr_auto_refresh	令牌每 5 分钟自动刷新，本机地址变化时自动更新	8.7	暂定	both	二维码自动刷新说明
+label_camera_permission_hint	扫码配对需要相机权限。你也可以改为手动输入对方的 IP 地址和端口进行连接。	8.11	暂定	mobile	相机权限被拒绝说明
+label_incoming_offer_from	来自“{peer}”的文件传输请求	15.1	暂定	both	接收确认对话框标题
+label_pair_request_from	“{peer}”请求与本机配对	7.3	暂定	both	配对请求对话框标题
+label_version_detail	本机版本：{local}　对方版本：{remote}	24.5	暂定	both	版本不兼容详情
+label_drag_drop_tip	支持将文件拖放到此区域	14.2	暂定	windows	会话区域底部拖放提示
+btn_connect	连接	6.2	原文	both	手动连接确认按钮
+btn_connecting	正在连接	6.8	原文	both	连接进行中按钮文字
+btn_cancel	取消	7.1	原文	both	通用取消按钮
+btn_accept	接受	7.3	原文	both	配对接受按钮
+btn_reject	拒绝	7.3	原文	both	配对/文件拒绝按钮
+btn_receive	接收	15.1	原文	both	文件确认接收按钮
+btn_send	发送	11.1	原文	both	发送文字/文件按钮
+btn_send_files	发送文件	14.1	原文	both	选择文件按钮
+btn_send_pending	发送全部文件	14.4	暂定	both	发送待发送列表按钮
+btn_clear_pending	清空列表	14.1	暂定	both	清空待发送列表按钮
+btn_paste	粘贴	13.5	原文	both	粘贴剪贴板到输入框
+btn_send_clipboard	发送剪贴板	13.6	原文	both	直接发送剪贴板按钮
+btn_copy	复制	13.1	原文	both	复制文字按钮
+btn_copy_path	复制路径	19.3	原文	both	复制完整路径按钮
+btn_copy_address	复制地址	6.1	暂定	both	复制本机 IP:端口
+btn_retry	重试	11.6	原文	both	重试发送或重试启动
+btn_resume	继续	17.3	原文	both	续传按钮
+btn_expand	展开	11.10	原文	both	展开长文本按钮
+btn_collapse	收起	11.10	暂定	both	收起长文本按钮
+btn_send_as_txt	以 .txt 文件发送	11.9	原文	both	超长文字转文件发送按钮
+btn_replace_and_send	替换并发送	12.6	原文	both	替换孤立代理项并发送
+btn_show_qr	显示本机二维码	8.2	原文	both	打开二维码展示界面
+btn_scan_qr	扫描二维码	8.2	原文	mobile	打开二维码扫描界面
+btn_qr_pair	二维码配对	8.1	暂定	both	二维码配对入口
+btn_manual_connect	手动连接	6.2	暂定	both	手动输入地址入口
+btn_unpair	解除配对	9.3	原文	both	解除信任按钮
+btn_repair_pair	重新配对	9.5	原文	both	对方解除配对后的重新配对按钮
+btn_open_file	打开文件	19.4	原文	both	打开已接收文件按钮
+btn_reveal_in_folder	打开所在位置	19.1	原文	both	在资源管理器/文件管理器中定位
+btn_open_receive_dir	打开接收目录	19.7	原文	both	打开接收目录按钮
+btn_change_dir	更改目录	16.3	暂定	both	选择新接收目录按钮
+btn_save	保存	4.4	暂定	both	保存设置按钮
+btn_delete	删除	20.10	原文	both	删除记录按钮
+btn_delete_record_only	仅删除记录	20.4	原文	both	删除文件记录三选一：仅记录
+btn_delete_with_file	同时删除本地文件	20.4	原文	both	删除文件记录三选一：含文件
+btn_clear_history	清空记录	20.11	原文	both	清空全部记录入口
+btn_clear	清空	20.5	原文	both	清空确认对话框主按钮
+btn_repair_firewall	修复防火墙规则	3.8	原文	windows	修复 Windows 防火墙按钮
+btn_open_notification_settings	去开启	21.11	暂定	both	打开系统通知设置按钮
+btn_receive_dir_settings	去设置	15.7	暂定	both	进入接收目录设置按钮
+btn_open_app_settings	去系统设置	8.11	暂定	mobile	相机或本地网络权限被拒后跳转设置
+btn_open_main_window	打开主窗口	21.3	原文	windows	系统托盘菜单项
+btn_exit	退出	21.3	原文	windows	系统托盘退出菜单项
+btn_confirm	确定	C8.1	暂定	both	通用确认按钮
+btn_close	关闭	C8.1	暂定	both	通用关闭按钮
+btn_refresh_qr	刷新二维码	8.7	暂定	both	手动刷新二维码按钮
+banner_no_network	请连接 Wi‑Fi 或开启热点	2.6	原文	both	无活动本地网络接口时的主界面横幅
+banner_identity_reset	本机身份已重置，需要与之前配对的设备重新配对。	4.6	暂定	both	身份文件损坏重置横幅
+banner_identity_save_failed	无法保存本机身份，暂时不能收发内容。请检查存储空间后重试。	Q14	暂定	both	身份无法保存横幅
+banner_listen_failed	传输服务启动失败，其他设备暂时无法连接本机。请重新打开应用。	5.9	暂定	both	全部端口监听失败横幅
+banner_discovery_unavailable	自动发现不可用，可以手动输入地址或扫码配对。	5.10	暂定	both	UDP 发现不可用横幅
+banner_history_store_failed	传输记录读取或保存失败，收发不受影响。	20.8	暂定	both	数据库异常横幅
+banner_notifications_off	通知未开启，后台收到的内容不会弹出通知。	21.11	暂定	both	通知关闭横幅
+banner_firewall	防火墙可能阻止了本应用，其他设备可能无法连接本机。	3.8	暂定	windows	Windows 防火墙缺失或存在阻止规则警告
+status_text_sending	发送中	M3.1	原文	both	文字发送中
+status_text_delivered	已送达	M3.1	原文	both	文字已送达
+status_text_failed	发送失败	M3.1	原文	both	文字发送失败
+status_text_received	已接收	M3.1	原文	both	文字已接收
+status_task_offering	等待对方确认	M3.2	原文	both	发送方等待确认
+status_task_awaiting_user	等待确认	M3.2	原文	both	接收方等待确认
+status_task_running	传输中	M3.2	原文	both	传输进行中
+status_task_interrupted	已中断	M3.2	原文	both	传输已中断
+status_task_resuming	正在继续	M3.2	原文	both	正在续传
+status_task_verifying_prefix	正在校验已传输部分	M3.2	原文	both	续传前校验哈希
+status_task_completed	已完成	M3.2	原文	both	传输完成
+status_task_rejected_sender	对方拒绝接收	15.3	原文	both	发送方被拒绝
+status_task_rejected_receiver	已拒绝	M3.2	暂定	both	接收方已拒绝
+status_task_no_response_sender	对方未响应	15.4	原文	both	发送方超时
+status_task_timeout_receiver	已超时	M3.2	暂定	both	接收方超时
+status_task_no_space	接收方存储空间不足	15.5	原文	both	空间不足
+status_task_cannot_save_sender	接收方无法保存文件	15.7	原文	both	发送方提示目录不可用
+status_task_cannot_save_receiver	接收目录不可用	15.7	原文	both	接收方提示目录不可用
+status_task_connection_lost	连接已断开	15.8	原文	both	Offer 阶段连接断开
+status_task_cancelled	已取消	18.2	原文	both	本机取消
+status_task_peer_cancelled	对方已取消	18.7	原文	both	传输中对方取消
+status_task_peer_cancelled_offer	对方已取消发送	15.8	原文	both	Offer 阶段对方取消
+status_task_offer_invalid	对方无法处理该请求	M3.2	暂定	both	无效 Offer
+status_interrupt_peer_unresponsive	对方无响应	18.6	原文	both	中断原因：15 s 无响应
+status_interrupt_peer_closed	连接被对方关闭	18.8	原文	both	中断原因：连接关闭
+status_interrupt_local_network_lost	本机网络已断开	18.8	原文	both	中断原因：本地接口消失
+status_interrupt_integrity_failed	数据完整性校验失败	10.5	原文	both	中断原因：AEAD 校验失败
+status_interrupt_protocol_error	协议数据错误	22.6	原文	both	中断原因：帧解码失败
+status_interrupt_write_failed	写入失败：{detail}	17.6	原文	both	中断原因：写入失败
+status_interrupt_app_exit	应用已退出	M3.2	暂定	both	中断原因：退出
+status_interrupt_app_killed	应用上次未正常结束	M3.2	暂定	both	中断原因：启动恢复
+status_file_waiting	等待中	14.6	原文	both	文件等待中
+status_file_transferring	传输中	14.6	原文	both	文件传输中
+status_file_verifying	正在校验	M3.3	原文	both	文件校验中副标题
+status_file_write_failed	写入失败	14.6	原文	both	文件写入失败
+status_file_completed	已完成	14.6	原文	both	文件已完成
+status_file_read_failed	读取失败	14.6	原文	both	文件读取失败
+status_file_checksum_failed	校验失败	14.6	原文	both	文件校验失败
+status_pair_waiting	等待对方确认	7.1	原文	both	配对发起方等待对方
+status_pair_completing	正在完成配对…	M3.4	暂定	both	正在保存信任并切换加密会话
+error_not_local	目标地址不在本地网络内	2.5	原文	both	非本地子网地址
+error_connect_failed	无法连接，请确认双方在同一网络且防火墙已放行	6.5	原文	both	手动连接/点选/可信直连/扫码连接失败
+error_connect_send_file	无法连接到对方设备	14.10	原文	both	发送文件建连失败
+error_connect_resume	无法连接到对方设备，任务已保持中断状态。	17.10	暂定	both	续传建连失败
+error_connect_self	不能连接本机。	6.9	暂定	both	尝试连接本机
+error_bind_failed	无法通过本地网络建立连接。	2.10	暂定	both	套接字绑定失败
+error_bind_failed_vpn	无法通过本地网络建立连接，请检查 VPN 是否允许应用绕过。	2.10	暂定	both	疑似 VPN 阻断本地网络
+error_ip_invalid	IP 地址格式无效	6.4	暂定	both	IPv4 格式校验错误
+error_port_invalid	端口须为 1–65535 之间的整数	6.4	暂定	both	端口校验错误
+error_no_version_response	对方未响应版本协商，请确认对方已打开本应用。	24.9	暂定	both	前导超时
+error_version_incompatible	对方版本不兼容，请将两端升级到最新版本	24.5	原文	both	主版本号不一致
+error_name_invalid	名称须为 1–32 个字符，且不能包含控制字符。	4.5	暂定	both	设备改名校验失败
+error_dir_not_writable	所选目录无法写入，请选择其他目录。	16.13	暂定	both	选择接收目录不可写
+error_file_size_unknown	无法获取该文件的大小，暂不支持发送。	Q19	暂定	both	无法获取大小的文件
+error_too_many_files	单次最多发送 1000 个文件。	14.8	暂定	both	超过 1000 文件提示
+error_folders_not_supported	暂不支持发送文件夹	14.9	原文	both	拖放或分享含文件夹提示
+error_no_network_qr	请先连接 Wi‑Fi 或热点	8.13	原文	both	二维码界面无网络提示
+error_qr_unrecognized	无法识别的二维码	8.8	原文	mobile	二维码解析失败
+error_qr_token_invalid	二维码已失效，请刷新后重试	8.9	原文	both	令牌过期/失效/已用
+error_no_file_handler	没有可打开此文件的应用	19.5	原文	both	打开文件无关联应用
+error_file_not_found	文件已被移动或删除	19.6	原文	both	文件不存在
+error_receive_dir_inaccessible	接收目录不存在或无法访问	19.11	原文	both	打开接收目录失败
+error_peer_unpaired	对方已解除配对	9.5	原文	both	对端返回 NOT_TRUSTED
+security_title	安全警告	9.4	暂定	both	安全警告对话框标题
+security_key_mismatch	“{peer}”的身份与配对时不一致，可能被冒充，已拒绝连接。	9.4	暂定	both	公钥不一致警告
+security_auth_failed	对方未能证明自己的身份，已断开连接。	10.6	暂定	both	Noise 握手认证失败
+security_qr_mismatch	对方身份与二维码不符，已停止配对。请确认扫描的是对方屏幕上的二维码。	8.10	暂定	both	二维码指纹不符
+toast_copied	已复制	13.1	原文	both	复制成功短暂提示
+toast_copied_with_nul	已复制。文字含空字符（NUL），粘贴到其他应用时可能在该处被截断。	13.10	暂定	both	含 NUL 复制提示
+toast_clipboard_empty	剪贴板中没有文本	13.7	原文	both	剪贴板无纯文本提示
+toast_clipboard_failed	无法访问剪贴板，请稍后重试。	13.9	暂定	both	剪贴板读写失败
+toast_name_chars_removed	已移除无法识别的字符	4.8	原文	both	改名移除孤立代理项提示
+toast_name_saved	设备名称已保存	4.4	暂定	both	改名成功提示
+toast_pair_success	配对成功	7.4	原文	both	点选配对成功提示
+toast_pair_success_peer	已与“{peer}”配对成功	8.4	暂定	both	扫码配对成功提示（含对方名称）
+toast_pair_rejected	对方拒绝了配对请求	7.6	原文	both	配对被拒绝
+toast_pair_timeout	配对请求已超时	7.7	原文	both	配对超时
+toast_pair_busy	对方正忙	7.9	原文	both	对方正在处理其他配对
+toast_pair_failed	配对失败，请重试	7.12	原文	both	配对断线或保存失败
+toast_delete_local_failed	本地文件删除失败，记录已保留。	20.4	暂定	both	同时删除本地文件失败
+toast_pending_cancel_failed	取消通知可能无法送达对方。	E5	暂定	both	写入 pending_cancel 失败
+dialog_text_too_long	文字超过长度上限（1 MB），无法直接发送。可以改为以 .txt 文件发送。	11.9	暂定	both	超长文字提示
+dialog_unpaired_surrogate	文本包含无法编码的字符	12.6	原文	both	含孤立代理项标题
+dialog_unpaired_surrogate_desc	可以选择将无法编码的字符替换为占位符（）后继续发送，或取消发送。	12.10	暂定	both	含孤立代理项说明
+dialog_unpair_title	确认解除配对	9.3	暂定	both	解除配对确认标题
+dialog_unpair_desc	解除与“{peer}”的配对后，将删除其信任信息与自动接收设置，并停止进行中的传输。	9.3	暂定	both	解除配对确认正文
+dialog_delete_file_title	删除文件记录	20.4	暂定	both	删除文件记录对话框标题
+dialog_delete_file_desc	是否同时删除本机保存的文件？	20.4	暂定	both	删除终态已接收文件提示
+dialog_delete_interrupted	删除此记录将取消整个传输任务，任务中未完成的文件不再继续传输。	20.10	暂定	both	删除已中断任务文件记录提示
+dialog_clear_history_title	确认清空记录	20.11	暂定	both	清空记录对话框标题
+dialog_clear_history	将删除本机全部传输记录，已接收的文件不受影响。	20.11	暂定	both	清空记录说明
+dialog_clear_history_unfinished	另有 {count} 个未完成的传输任务将被一并取消。	20.11	暂定	both	存在未完成任务时的补充说明
+dialog_exit_transfer_title	仍有传输进行中，确认退出？	21.5	原文	windows	托盘退出确认标题
+dialog_exit_transfer_desc	退出后，进行中的任务将标记为“已中断”并保留临时文件，下次打开后可点击继续。	21.5	暂定	windows	托盘退出确认说明
+dialog_no_file_manager	没有可打开目录的文件管理器，完整路径：{path}	19.3	暂定	android	Android 无文件管理器提示
+guide_bg_title	允许后台运行	C6.5	暂定	android	后台运行引导标题
+guide_bg_intro_xiaomi	小米手机可能在后台暂停传输，请完成以下设置：	C6.5	暂定	android	小米引导简介
+guide_bg_intro_generic	为避免后台传输被系统暂停，请允许本应用不受电池优化限制。	C6.5	暂定	android	通用引导简介
+guide_bg_step_battery	1. 将省电策略设为“无限制”	C6.5	暂定	android	引导步骤 1
+guide_bg_step_autostart	2. 允许本应用自启动	C6.5	暂定	android	引导步骤 2
+guide_bg_step_lock	3. 在最近任务中锁定本应用	C6.5	暂定	android	引导步骤 3
+btn_guide_battery	设置省电	C6.5	暂定	android	引导按钮：电池优化
+btn_guide_autostart	允许自启	C6.5	暂定	android	引导按钮：小米自启
+btn_guide_done	知道了	C6.5	暂定	android	引导确认按钮
+settings_background_run	后台运行设置	C6.5	暂定	android	设置中的引导常驻入口
+notify_channel_progress	传输进度	C6.3	暂定	android	通知渠道名：传输进度
+notify_channel_content	收到内容	C6.3	暂定	android	通知渠道名：收到内容
+notify_channel_background	后台接收	C6.3	暂定	android	通知渠道名：后台接收
+notify_bg_running_title	局域网传输后台接收已开启	21.2	暂定	android	后台常驻通知标题
+notify_bg_running_body	点击返回应用主界面	21.2	暂定	android	后台常驻通知正文
+notify_text_title	来自“{peer}”的新文字	21.6	暂定	both	文字通知标题
+notify_file_done_title	已接收来自“{peer}”的文件	21.7	暂定	both	文件完成通知标题
+notify_pair_req_title	收到配对请求	21.8	暂定	both	配对请求通知标题
+notify_pair_req_body	“{peer}”请求与本机配对，点击查看	21.8	暂定	both	配对请求通知正文
+notify_file_req_title	收到文件传输请求	21.8	暂定	both	文件请求通知标题
+notify_file_req_body	“{peer}”想发送 {count} 个文件，点击确认	21.8	暂定	both	文件请求通知正文
+notify_problem_title	传输异常（{peer}）	21.10	暂定	both	传输异常通知标题
+notify_progress_title	正在与“{peer}”传输文件（{percent}%）	21.1	暂定	android	进度通知标题
+share_choose_device	选择接收设备	14.3	暂定	mobile	系统分享目标选择标题
+share_files_summary	准备分享 {count} 个文件	14.3	暂定	mobile	分享文件摘要
+share_text_summary	准备分享一段文字	14.3	暂定	mobile	分享文字摘要
+ios_banner_local_network_denied	本地网络权限未开启，无法发现或连接局域网设备。	iOS	暂定	ios	iOS 本地网络权限被拒绝横幅
+ios_label_files_app_dir	“文件”App → 我的 iPhone → 局域网传输	iOS	暂定	ios	iOS 固定保存目录说明
+ios_btn_open_files_app	在“文件”中打开	iOS	暂定	ios	在 iOS 文件 App 中打开目录
+ios_btn_pick_photos	相册	iOS	暂定	ios	会话页选择相册图片或视频
+ios_btn_pick_files	文件	iOS	暂定	ios	会话页选择文件
+ios_section_bg_permissions	后台与权限	iOS	暂定	ios	iOS 设置页后台与权限分组标题
+ios_bg_notice_title	关于 iOS 后台传输	iOS	暂定	ios	iOS 后台传输行为说明标题
+ios_bg_notice_desc	切至后台后系统仅允许短暂继续传输；传输中断后回到前台可一键断点续传。大文件传输期间应用会自动保持屏幕常亮。	iOS	暂定	ios	iOS 后台传输行为说明正文
+ios_btn_system_settings	本地网络与通知设置	iOS	暂定	ios	跳转 iOS 系统应用设置入口
+ios_qr_screenshot_warning	二维码包含一次性配对令牌，请勿将截屏发送给他人。	iOS	暂定	ios	二维码页面截屏温和提醒
+ios_btn_quick_look	预览	iOS	暂定	ios	使用 QuickLook 预览已接收文件
+ios_notify_bg_paused	应用转入后台，传输已暂停，点击返回继续	iOS	暂定	ios	iOS 后台超时暂停传输通知

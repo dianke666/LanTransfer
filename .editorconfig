@@ -1,0 +1,37 @@
+# EditorConfig：https://editorconfig.org
+# 全部文本文件使用 UTF-8（无 BOM）。charset = utf-8 即无 BOM，utf-8-bom 才带 BOM。
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+# MSBuild、JSON、YAML、TOML
+[*.{csproj,props,targets,json,yml,yaml,toml}]
+indent_size = 2
+
+# Markdown 行尾两个空格表示换行，不自动删除
+[*.md]
+trim_trailing_whitespace = false
+
+# Windows 专用脚本与解决方案文件
+[*.{bat,cmd}]
+end_of_line = crlf
+
+[*.sln]
+end_of_line = crlf
+indent_style = tab
+
+# 界面文案表：制表符是列分隔符，末尾空列以制表符结尾，不得被替换或删除
+[*.tsv]
+indent_style = tab
+trim_trailing_whitespace = false
+
+# 协议测试向量由工具生成，按字节原样保存，编辑器不做任何调整
+[protocol/test-vectors/**]
+trim_trailing_whitespace = false
+insert_final_newline = unset

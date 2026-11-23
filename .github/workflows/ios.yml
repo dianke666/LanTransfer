@@ -1,0 +1,120 @@
+# iOS 端云端编译、测试与免签名 IPA 打包工作流（运行在 GitHub Actions macos-15）。
+name: ios
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - "ios/**"
+      - "protocol/**"
+      - "shared/**"
+      - ".github/workflows/ios.yml"
+  pull_request:
+    paths:
+      - "ios/**"
+      - "protocol/**"
+      - "shared/**"
+      - ".github/workflows/ios.yml"
+  workflow_dispatch:
+    inputs:
+      build-ipa:
+        description: 是否构建真机免签名 IPA 安装包（供 Windows Sideloadly / AltStore 侧载）
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: Swift tests, Simulator test, and unsigned IPA
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: 打印 Xcode 与 Swift 版本
+        run: |
+          xcodebuild -version
+          swift --version
+
+      - name: 校验共享中文文案与生成文件同步
+        run: |
+          python3 shared/ui-text/generate.py
+          git diff --exit-code ios/LanTransferApp/Resources/zh-Hans.lproj/Localizable.strings ios/LanTransferApp/UI/Text/UiText.g.swift
+
+      - name: 运行 LanTransferCore 全部单元测试（含 10 份跨端向量与 E2E 测试）
+        working-directory: ios/Packages/LanTransferCore
+        run: |
+          set -o pipefail
+          swift test -v 2>&1 | tee ../../../ios-swift-test.log
+
+      - name: 安装 XcodeGen 并生成 Xcode 工程
+        working-directory: ios
+        run: |
+          if ! command -v xcodegen >/dev/null 2>&1; then
+            brew install xcodegen
+          fi
+          xcodegen generate
+
+      - name: 编译并运行 iOS 模拟器测试（LanTransferApp + ShareExtension + AppTests）
+        working-directory: ios
+        run: |
+          set -o pipefail
+          SIM_UDID=$(xcrun simctl list devices available -j | python3 -c "import json,sys; d=json.load(sys.stdin)['devices']; devs=[x for r,l in d.items() if 'iOS' in r for x in l if x.get('isAvailable') and 'iPhone' in x.get('name','')]; print(devs[-1]['udid'] if devs else '')")
+          if [ -n "$SIM_UDID" ]; then
+            echo "Using simulator UDID: $SIM_UDID"
+            xcodebuild \
+              -project LanTransfer.xcodeproj \
+              -scheme LanTransferApp \
+              -configuration Debug \
+              -destination "id=$SIM_UDID" \
+              CODE_SIGNING_ALLOWED=NO \
+              test 2>&1 | tee ../ios-sim-test.log
+          else
+            xcodebuild \
+              -project LanTransfer.xcodeproj \
+              -scheme LanTransferApp \
+              -configuration Debug \
+              -destination 'generic/platform=iOS Simulator' \
+              CODE_SIGNING_ALLOWED=NO \
+              build 2>&1 | tee ../ios-sim-test.log
+          fi
+
+      - name: 构建真机免签名 IPA（供侧载测试）
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.build-ipa != false }}
+        working-directory: ios
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project LanTransfer.xcodeproj \
+            -scheme LanTransferApp \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath DerivedDataDevice \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build 2>&1 | tee ../ios-device-build.log
+          rm -rf dist
+          mkdir -p dist/Payload
+          cp -R DerivedDataDevice/Build/Products/Release-iphoneos/LanTransfer.app dist/Payload/
+          (cd dist && zip -r -q LanTransfer-1.0.0-unsigned.ipa Payload)
+          ls -lh dist/LanTransfer-1.0.0-unsigned.ipa
+
+      - name: 上传真机免签名 IPA 产物
+        if: ${{ success() && (github.event_name != 'workflow_dispatch' || inputs.build-ipa != false) }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: LanTransfer-iOS-unsigned-ipa
+          path: ios/dist/LanTransfer-1.0.0-unsigned.ipa
+          retention-days: 14
+
+      - name: 失败时上传完整编译与测试日志
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ios-build-logs
+          path: ios-*.log
+          retention-days: 7

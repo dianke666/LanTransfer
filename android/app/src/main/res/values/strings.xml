@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 自动生成自 shared/ui-text/zh-CN.tsv，请勿手工修改 -->
+<resources>
+    <string name="app_name" formatted="false">局域网传输</string>
+    <string name="app_subtitle" formatted="false">局域网点对点安全快传</string>
+    <string name="device_type_android" formatted="false">Android</string>
+    <string name="device_type_windows" formatted="false">Windows</string>
+    <string name="device_type_ios" formatted="false">iOS</string>
+    <string name="nav_devices" formatted="false">附近设备</string>
+    <string name="nav_history" formatted="false">传输记录</string>
+    <string name="nav_settings" formatted="false">设置</string>
+    <string name="section_local_device" formatted="false">本机信息</string>
+    <string name="section_nearby_devices" formatted="false">局域网设备</string>
+    <string name="section_trusted_devices" formatted="false">已信任设备</string>
+    <string name="section_appearance" formatted="false">外观主题</string>
+    <string name="section_transfer_prefs" formatted="false">传输与剪贴板</string>
+    <string name="section_background_prefs" formatted="false">后台与通知</string>
+    <string name="theme_system" formatted="false">跟随系统</string>
+    <string name="theme_light" formatted="false">浅色</string>
+    <string name="theme_dark" formatted="false">深色</string>
+    <string name="label_ip_address" formatted="false">IP 地址</string>
+    <string name="label_port" formatted="false">端口</string>
+    <string name="label_port_optional" formatted="false">端口（留空默认 42580）</string>
+    <string name="label_device_name" formatted="false">设备显示名称</string>
+    <string name="label_receive_dir" formatted="false">接收目录</string>
+    <string name="label_default_receive_dir" formatted="false">默认（下载/LanTransfer）</string>
+    <string name="label_auto_copy" formatted="false">自动复制收到的文字</string>
+    <string name="label_auto_copy_desc" formatted="false">收到新文字消息时自动写入系统剪贴板</string>
+    <string name="label_auto_accept" formatted="false">自动接收文件</string>
+    <string name="label_background_receive" formatted="false">后台接收</string>
+    <string name="label_background_receive_desc" formatted="false">切至后台或锁屏后持续保持发现与接收</string>
+    <string name="label_trusted_badge" formatted="false">已信任</string>
+    <string name="label_connected_badge" formatted="false">已连接</string>
+    <string name="label_untrusted_badge" formatted="false">未配对</string>
+    <string name="label_encrypted_hint" formatted="false">端到端加密 · 仅限本地网络</string>
+    <string name="label_direction_send" formatted="false">发送</string>
+    <string name="label_direction_receive" formatted="false">接收</string>
+    <string name="label_file_count">共 %1$s 个文件</string>
+    <string name="label_total_size">总大小 %1$s</string>
+    <string name="label_pending_files">待发送列表（%1$s）</string>
+    <string name="label_speed">速率 %1$s</string>
+    <string name="label_eta">剩余 %1$s</string>
+    <string name="label_eta_unknown" formatted="false">未知</string>
+    <string name="label_listen_port">监听端口 %1$s</string>
+    <string name="label_not_listening" formatted="false">未监听</string>
+    <string name="label_search_history" formatted="false">搜索文件名、设备名或文字内容</string>
+    <string name="label_filter_all" formatted="false">全部</string>
+    <string name="label_filter_text" formatted="false">文字</string>
+    <string name="label_filter_file" formatted="false">文件</string>
+    <string name="label_message_placeholder" formatted="false">输入要发送的文字，完整保留换行与特殊字符…</string>
+    <string name="label_welcome_title" formatted="false">开始局域网极速互传</string>
+    <string name="label_scanning_devices" formatted="false">正在扫描同一局域网内的设备…</string>
+    <string name="label_no_trusted_devices" formatted="false">暂无已信任设备，可通过点选设备、扫码或手动输入地址配对。</string>
+    <string name="label_no_history" formatted="false">暂无传输记录</string>
+    <string name="label_no_messages" formatted="false">暂无消息，发送一段文字或选择文件开始传输吧</string>
+    <string name="label_pair_code_hint" formatted="false">请核对双方屏幕上显示的 6 位验证码是否一致</string>
+    <string name="label_qr_hint" formatted="false">使用手机端“扫描二维码”扫描下方二维码即可完成配对</string>
+    <string name="label_qr_auto_refresh" formatted="false">令牌每 5 分钟自动刷新，本机地址变化时自动更新</string>
+    <string name="label_camera_permission_hint" formatted="false">扫码配对需要相机权限。你也可以改为手动输入对方的 IP 地址和端口进行连接。</string>
+    <string name="label_incoming_offer_from">来自“%1$s”的文件传输请求</string>
+    <string name="label_pair_request_from">“%1$s”请求与本机配对</string>
+    <string name="label_version_detail">本机版本：%1$s　对方版本：%2$s</string>
+    <string name="btn_connect" formatted="false">连接</string>
+    <string name="btn_connecting" formatted="false">正在连接</string>
+    <string name="btn_cancel" formatted="false">取消</string>
+    <string name="btn_accept" formatted="false">接受</string>
+    <string name="btn_reject" formatted="false">拒绝</string>
+    <string name="btn_receive" formatted="false">接收</string>
+    <string name="btn_send" formatted="false">发送</string>
+    <string name="btn_send_files" formatted="false">发送文件</string>
+    <string name="btn_send_pending" formatted="false">发送全部文件</string>
+    <string name="btn_clear_pending" formatted="false">清空列表</string>
+    <string name="btn_paste" formatted="false">粘贴</string>
+    <string name="btn_send_clipboard" formatted="false">发送剪贴板</string>
+    <string name="btn_copy" formatted="false">复制</string>
+    <string name="btn_copy_path" formatted="false">复制路径</string>
+    <string name="btn_copy_address" formatted="false">复制地址</string>
+    <string name="btn_retry" formatted="false">重试</string>
+    <string name="btn_resume" formatted="false">继续</string>
+    <string name="btn_expand" formatted="false">展开</string>
+    <string name="btn_collapse" formatted="false">收起</string>
+    <string name="btn_send_as_txt" formatted="false">以 .txt 文件发送</string>
+    <string name="btn_replace_and_send" formatted="false">替换并发送</string>
+    <string name="btn_show_qr" formatted="false">显示本机二维码</string>
+    <string name="btn_scan_qr" formatted="false">扫描二维码</string>
+    <string name="btn_qr_pair" formatted="false">二维码配对</string>
+    <string name="btn_manual_connect" formatted="false">手动连接</string>
+    <string name="btn_unpair" formatted="false">解除配对</string>
+    <string name="btn_repair_pair" formatted="false">重新配对</string>
+    <string name="btn_open_file" formatted="false">打开文件</string>
+    <string name="btn_reveal_in_folder" formatted="false">打开所在位置</string>
+    <string name="btn_open_receive_dir" formatted="false">打开接收目录</string>
+    <string name="btn_change_dir" formatted="false">更改目录</string>
+    <string name="btn_save" formatted="false">保存</string>
+    <string name="btn_delete" formatted="false">删除</string>
+    <string name="btn_delete_record_only" formatted="false">仅删除记录</string>
+    <string name="btn_delete_with_file" formatted="false">同时删除本地文件</string>
+    <string name="btn_clear_history" formatted="false">清空记录</string>
+    <string name="btn_clear" formatted="false">清空</string>
+    <string name="btn_open_notification_settings" formatted="false">去开启</string>
+    <string name="btn_receive_dir_settings" formatted="false">去设置</string>
+    <string name="btn_open_app_settings" formatted="false">去系统设置</string>
+    <string name="btn_confirm" formatted="false">确定</string>
+    <string name="btn_close" formatted="false">关闭</string>
+    <string name="btn_refresh_qr" formatted="false">刷新二维码</string>
+    <string name="banner_no_network" formatted="false">请连接 Wi‑Fi 或开启热点</string>
+    <string name="banner_identity_reset" formatted="false">本机身份已重置，需要与之前配对的设备重新配对。</string>
+    <string name="banner_identity_save_failed" formatted="false">无法保存本机身份，暂时不能收发内容。请检查存储空间后重试。</string>
+    <string name="banner_listen_failed" formatted="false">传输服务启动失败，其他设备暂时无法连接本机。请重新打开应用。</string>
+    <string name="banner_discovery_unavailable" formatted="false">自动发现不可用，可以手动输入地址或扫码配对。</string>
+    <string name="banner_history_store_failed" formatted="false">传输记录读取或保存失败，收发不受影响。</string>
+    <string name="banner_notifications_off" formatted="false">通知未开启，后台收到的内容不会弹出通知。</string>
+    <string name="status_text_sending" formatted="false">发送中</string>
+    <string name="status_text_delivered" formatted="false">已送达</string>
+    <string name="status_text_failed" formatted="false">发送失败</string>
+    <string name="status_text_received" formatted="false">已接收</string>
+    <string name="status_task_offering" formatted="false">等待对方确认</string>
+    <string name="status_task_awaiting_user" formatted="false">等待确认</string>
+    <string name="status_task_running" formatted="false">传输中</string>
+    <string name="status_task_interrupted" formatted="false">已中断</string>
+    <string name="status_task_resuming" formatted="false">正在继续</string>
+    <string name="status_task_verifying_prefix" formatted="false">正在校验已传输部分</string>
+    <string name="status_task_completed" formatted="false">已完成</string>
+    <string name="status_task_rejected_sender" formatted="false">对方拒绝接收</string>
+    <string name="status_task_rejected_receiver" formatted="false">已拒绝</string>
+    <string name="status_task_no_response_sender" formatted="false">对方未响应</string>
+    <string name="status_task_timeout_receiver" formatted="false">已超时</string>
+    <string name="status_task_no_space" formatted="false">接收方存储空间不足</string>
+    <string name="status_task_cannot_save_sender" formatted="false">接收方无法保存文件</string>
+    <string name="status_task_cannot_save_receiver" formatted="false">接收目录不可用</string>
+    <string name="status_task_connection_lost" formatted="false">连接已断开</string>
+    <string name="status_task_cancelled" formatted="false">已取消</string>
+    <string name="status_task_peer_cancelled" formatted="false">对方已取消</string>
+    <string name="status_task_peer_cancelled_offer" formatted="false">对方已取消发送</string>
+    <string name="status_task_offer_invalid" formatted="false">对方无法处理该请求</string>
+    <string name="status_interrupt_peer_unresponsive" formatted="false">对方无响应</string>
+    <string name="status_interrupt_peer_closed" formatted="false">连接被对方关闭</string>
+    <string name="status_interrupt_local_network_lost" formatted="false">本机网络已断开</string>
+    <string name="status_interrupt_integrity_failed" formatted="false">数据完整性校验失败</string>
+    <string name="status_interrupt_protocol_error" formatted="false">协议数据错误</string>
+    <string name="status_interrupt_write_failed">写入失败：%1$s</string>
+    <string name="status_interrupt_app_exit" formatted="false">应用已退出</string>
+    <string name="status_interrupt_app_killed" formatted="false">应用上次未正常结束</string>
+    <string name="status_file_waiting" formatted="false">等待中</string>
+    <string name="status_file_transferring" formatted="false">传输中</string>
+    <string name="status_file_verifying" formatted="false">正在校验</string>
+    <string name="status_file_write_failed" formatted="false">写入失败</string>
+    <string name="status_file_completed" formatted="false">已完成</string>
+    <string name="status_file_read_failed" formatted="false">读取失败</string>
+    <string name="status_file_checksum_failed" formatted="false">校验失败</string>
+    <string name="status_pair_waiting" formatted="false">等待对方确认</string>
+    <string name="status_pair_completing" formatted="false">正在完成配对…</string>
+    <string name="error_not_local" formatted="false">目标地址不在本地网络内</string>
+    <string name="error_connect_failed" formatted="false">无法连接，请确认双方在同一网络且防火墙已放行</string>
+    <string name="error_connect_send_file" formatted="false">无法连接到对方设备</string>
+    <string name="error_connect_resume" formatted="false">无法连接到对方设备，任务已保持中断状态。</string>
+    <string name="error_connect_self" formatted="false">不能连接本机。</string>
+    <string name="error_bind_failed" formatted="false">无法通过本地网络建立连接。</string>
+    <string name="error_bind_failed_vpn" formatted="false">无法通过本地网络建立连接，请检查 VPN 是否允许应用绕过。</string>
+    <string name="error_ip_invalid" formatted="false">IP 地址格式无效</string>
+    <string name="error_port_invalid" formatted="false">端口须为 1–65535 之间的整数</string>
+    <string name="error_no_version_response" formatted="false">对方未响应版本协商，请确认对方已打开本应用。</string>
+    <string name="error_version_incompatible" formatted="false">对方版本不兼容，请将两端升级到最新版本</string>
+    <string name="error_name_invalid" formatted="false">名称须为 1–32 个字符，且不能包含控制字符。</string>
+    <string name="error_dir_not_writable" formatted="false">所选目录无法写入，请选择其他目录。</string>
+    <string name="error_file_size_unknown" formatted="false">无法获取该文件的大小，暂不支持发送。</string>
+    <string name="error_too_many_files" formatted="false">单次最多发送 1000 个文件。</string>
+    <string name="error_folders_not_supported" formatted="false">暂不支持发送文件夹</string>
+    <string name="error_no_network_qr" formatted="false">请先连接 Wi‑Fi 或热点</string>
+    <string name="error_qr_unrecognized" formatted="false">无法识别的二维码</string>
+    <string name="error_qr_token_invalid" formatted="false">二维码已失效，请刷新后重试</string>
+    <string name="error_no_file_handler" formatted="false">没有可打开此文件的应用</string>
+    <string name="error_file_not_found" formatted="false">文件已被移动或删除</string>
+    <string name="error_receive_dir_inaccessible" formatted="false">接收目录不存在或无法访问</string>
+    <string name="error_peer_unpaired" formatted="false">对方已解除配对</string>
+    <string name="security_title" formatted="false">安全警告</string>
+    <string name="security_key_mismatch">“%1$s”的身份与配对时不一致，可能被冒充，已拒绝连接。</string>
+    <string name="security_auth_failed" formatted="false">对方未能证明自己的身份，已断开连接。</string>
+    <string name="security_qr_mismatch" formatted="false">对方身份与二维码不符，已停止配对。请确认扫描的是对方屏幕上的二维码。</string>
+    <string name="toast_copied" formatted="false">已复制</string>
+    <string name="toast_copied_with_nul" formatted="false">已复制。文字含空字符（NUL），粘贴到其他应用时可能在该处被截断。</string>
+    <string name="toast_clipboard_empty" formatted="false">剪贴板中没有文本</string>
+    <string name="toast_clipboard_failed" formatted="false">无法访问剪贴板，请稍后重试。</string>
+    <string name="toast_name_chars_removed" formatted="false">已移除无法识别的字符</string>
+    <string name="toast_name_saved" formatted="false">设备名称已保存</string>
+    <string name="toast_pair_success" formatted="false">配对成功</string>
+    <string name="toast_pair_success_peer">已与“%1$s”配对成功</string>
+    <string name="toast_pair_rejected" formatted="false">对方拒绝了配对请求</string>
+    <string name="toast_pair_timeout" formatted="false">配对请求已超时</string>
+    <string name="toast_pair_busy" formatted="false">对方正忙</string>
+    <string name="toast_pair_failed" formatted="false">配对失败，请重试</string>
+    <string name="toast_delete_local_failed" formatted="false">本地文件删除失败，记录已保留。</string>
+    <string name="toast_pending_cancel_failed" formatted="false">取消通知可能无法送达对方。</string>
+    <string name="dialog_text_too_long" formatted="false">文字超过长度上限（1 MB），无法直接发送。可以改为以 .txt 文件发送。</string>
+    <string name="dialog_unpaired_surrogate" formatted="false">文本包含无法编码的字符</string>
+    <string name="dialog_unpaired_surrogate_desc" formatted="false">可以选择将无法编码的字符替换为占位符（）后继续发送，或取消发送。</string>
+    <string name="dialog_unpair_title" formatted="false">确认解除配对</string>
+    <string name="dialog_unpair_desc">解除与“%1$s”的配对后，将删除其信任信息与自动接收设置，并停止进行中的传输。</string>
+    <string name="dialog_delete_file_title" formatted="false">删除文件记录</string>
+    <string name="dialog_delete_file_desc" formatted="false">是否同时删除本机保存的文件？</string>
+    <string name="dialog_delete_interrupted" formatted="false">删除此记录将取消整个传输任务，任务中未完成的文件不再继续传输。</string>
+    <string name="dialog_clear_history_title" formatted="false">确认清空记录</string>
+    <string name="dialog_clear_history" formatted="false">将删除本机全部传输记录，已接收的文件不受影响。</string>
+    <string name="dialog_clear_history_unfinished">另有 %1$s 个未完成的传输任务将被一并取消。</string>
+    <string name="dialog_no_file_manager">没有可打开目录的文件管理器，完整路径：%1$s</string>
+    <string name="guide_bg_title" formatted="false">允许后台运行</string>
+    <string name="guide_bg_intro_xiaomi" formatted="false">小米手机可能在后台暂停传输，请完成以下设置：</string>
+    <string name="guide_bg_intro_generic" formatted="false">为避免后台传输被系统暂停，请允许本应用不受电池优化限制。</string>
+    <string name="guide_bg_step_battery" formatted="false">1. 将省电策略设为“无限制”</string>
+    <string name="guide_bg_step_autostart" formatted="false">2. 允许本应用自启动</string>
+    <string name="guide_bg_step_lock" formatted="false">3. 在最近任务中锁定本应用</string>
+    <string name="btn_guide_battery" formatted="false">设置省电</string>
+    <string name="btn_guide_autostart" formatted="false">允许自启</string>
+    <string name="btn_guide_done" formatted="false">知道了</string>
+    <string name="settings_background_run" formatted="false">后台运行设置</string>
+    <string name="notify_channel_progress" formatted="false">传输进度</string>
+    <string name="notify_channel_content" formatted="false">收到内容</string>
+    <string name="notify_channel_background" formatted="false">后台接收</string>
+    <string name="notify_bg_running_title" formatted="false">局域网传输后台接收已开启</string>
+    <string name="notify_bg_running_body" formatted="false">点击返回应用主界面</string>
+    <string name="notify_text_title">来自“%1$s”的新文字</string>
+    <string name="notify_file_done_title">已接收来自“%1$s”的文件</string>
+    <string name="notify_pair_req_title" formatted="false">收到配对请求</string>
+    <string name="notify_pair_req_body">“%1$s”请求与本机配对，点击查看</string>
+    <string name="notify_file_req_title" formatted="false">收到文件传输请求</string>
+    <string name="notify_file_req_body">“%1$s”想发送 %2$s 个文件，点击确认</string>
+    <string name="notify_problem_title">传输异常（%1$s）</string>
+    <string name="notify_progress_title">正在与“%1$s”传输文件（%2$s%%）</string>
+    <string name="share_choose_device" formatted="false">选择接收设备</string>
+    <string name="share_files_summary">准备分享 %1$s 个文件</string>
+    <string name="share_text_summary" formatted="false">准备分享一段文字</string>
+</resources>

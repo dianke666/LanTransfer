@@ -1,0 +1,16 @@
+{
+  "format_version": 1,
+  "protocol_version": "1.0",
+  "files": [
+    "frames.json",
+    "frames-invalid.json",
+    "text-messages.json",
+    "utf8-invalid.json",
+    "announcements.json",
+    "qr-payloads.json",
+    "preamble.json",
+    "noise-xx.json",
+    "verification-code.json",
+    "filename-sanitizer.json"
+  ]
+}

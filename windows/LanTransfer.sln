@@ -1,0 +1,101 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LanTransfer.Protocol", "src\LanTransfer.Protocol\LanTransfer.Protocol.csproj", "{B9F3FEEA-BDA9-4E48-8426-569FA0F7E9D7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LanTransfer.Domain", "src\LanTransfer.Domain\LanTransfer.Domain.csproj", "{1224108C-2B5A-46A0-9102-A006C1D8A438}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LanTransfer.Engine", "src\LanTransfer.Engine\LanTransfer.Engine.csproj", "{33B88A97-C0E7-48FD-836D-68BD0BFDE171}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LanTransfer.Platform.Windows", "src\LanTransfer.Platform.Windows\LanTransfer.Platform.Windows.csproj", "{CFFDB21F-5C4D-4B16-9A7B-8C9576A4345F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LanTransfer.App", "src\LanTransfer.App\LanTransfer.App.csproj", "{4DFF642C-552B-415E-9C09-3508B789DD4B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{07C2787E-EAC7-C090-1BA3-A61EC2A24D84}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LanTransfer.PeerCli", "tools\LanTransfer.PeerCli\LanTransfer.PeerCli.csproj", "{6D6E9EF7-5C54-42BE-95D6-4DFCA4E825AD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05-4346-4AA6-1389-037BE0695223}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LanTransfer.Testing", "tests\LanTransfer.Testing\LanTransfer.Testing.csproj", "{E037F5B4-A2AC-448F-8AF7-8BF45A2FFF1E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LanTransfer.Protocol.Tests", "tests\LanTransfer.Protocol.Tests\LanTransfer.Protocol.Tests.csproj", "{4BCAE18E-CA63-464C-A78B-7F6666C2A3E7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LanTransfer.Domain.Tests", "tests\LanTransfer.Domain.Tests\LanTransfer.Domain.Tests.csproj", "{C7DBD906-FE9D-4557-95F5-DD8B03FB894D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LanTransfer.Engine.Tests", "tests\LanTransfer.Engine.Tests\LanTransfer.Engine.Tests.csproj", "{0375821C-C377-4D88-B25A-C2B59F5936F3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LanTransfer.Platform.Windows.Tests", "tests\LanTransfer.Platform.Windows.Tests\LanTransfer.Platform.Windows.Tests.csproj", "{5E7781B7-B938-48E5-AEB6-B15141BFB8C7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B9F3FEEA-BDA9-4E48-8426-569FA0F7E9D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B9F3FEEA-BDA9-4E48-8426-569FA0F7E9D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B9F3FEEA-BDA9-4E48-8426-569FA0F7E9D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B9F3FEEA-BDA9-4E48-8426-569FA0F7E9D7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1224108C-2B5A-46A0-9102-A006C1D8A438}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1224108C-2B5A-46A0-9102-A006C1D8A438}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1224108C-2B5A-46A0-9102-A006C1D8A438}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1224108C-2B5A-46A0-9102-A006C1D8A438}.Release|Any CPU.Build.0 = Release|Any CPU
+		{33B88A97-C0E7-48FD-836D-68BD0BFDE171}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{33B88A97-C0E7-48FD-836D-68BD0BFDE171}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{33B88A97-C0E7-48FD-836D-68BD0BFDE171}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{33B88A97-C0E7-48FD-836D-68BD0BFDE171}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CFFDB21F-5C4D-4B16-9A7B-8C9576A4345F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CFFDB21F-5C4D-4B16-9A7B-8C9576A4345F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CFFDB21F-5C4D-4B16-9A7B-8C9576A4345F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CFFDB21F-5C4D-4B16-9A7B-8C9576A4345F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4DFF642C-552B-415E-9C09-3508B789DD4B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4DFF642C-552B-415E-9C09-3508B789DD4B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4DFF642C-552B-415E-9C09-3508B789DD4B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4DFF642C-552B-415E-9C09-3508B789DD4B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6D6E9EF7-5C54-42BE-95D6-4DFCA4E825AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D6E9EF7-5C54-42BE-95D6-4DFCA4E825AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D6E9EF7-5C54-42BE-95D6-4DFCA4E825AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6D6E9EF7-5C54-42BE-95D6-4DFCA4E825AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E037F5B4-A2AC-448F-8AF7-8BF45A2FFF1E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E037F5B4-A2AC-448F-8AF7-8BF45A2FFF1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E037F5B4-A2AC-448F-8AF7-8BF45A2FFF1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E037F5B4-A2AC-448F-8AF7-8BF45A2FFF1E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4BCAE18E-CA63-464C-A78B-7F6666C2A3E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4BCAE18E-CA63-464C-A78B-7F6666C2A3E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4BCAE18E-CA63-464C-A78B-7F6666C2A3E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4BCAE18E-CA63-464C-A78B-7F6666C2A3E7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C7DBD906-FE9D-4557-95F5-DD8B03FB894D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C7DBD906-FE9D-4557-95F5-DD8B03FB894D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C7DBD906-FE9D-4557-95F5-DD8B03FB894D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C7DBD906-FE9D-4557-95F5-DD8B03FB894D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0375821C-C377-4D88-B25A-C2B59F5936F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0375821C-C377-4D88-B25A-C2B59F5936F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0375821C-C377-4D88-B25A-C2B59F5936F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0375821C-C377-4D88-B25A-C2B59F5936F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5E7781B7-B938-48E5-AEB6-B15141BFB8C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5E7781B7-B938-48E5-AEB6-B15141BFB8C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5E7781B7-B938-48E5-AEB6-B15141BFB8C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5E7781B7-B938-48E5-AEB6-B15141BFB8C7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B9F3FEEA-BDA9-4E48-8426-569FA0F7E9D7} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{1224108C-2B5A-46A0-9102-A006C1D8A438} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{33B88A97-C0E7-48FD-836D-68BD0BFDE171} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{CFFDB21F-5C4D-4B16-9A7B-8C9576A4345F} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{4DFF642C-552B-415E-9C09-3508B789DD4B} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{6D6E9EF7-5C54-42BE-95D6-4DFCA4E825AD} = {07C2787E-EAC7-C090-1BA3-A61EC2A24D84}
+		{E037F5B4-A2AC-448F-8AF7-8BF45A2FFF1E} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{4BCAE18E-CA63-464C-A78B-7F6666C2A3E7} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{C7DBD906-FE9D-4557-95F5-DD8B03FB894D} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{0375821C-C377-4D88-B25A-C2B59F5936F3} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{5E7781B7-B938-48E5-AEB6-B15141BFB8C7} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+	EndGlobalSection
+EndGlobal

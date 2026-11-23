@@ -1,0 +1,1944 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LanTransfer iOS 端 UI 交互原型预览（SwiftUI / Apple HIG）</title>
+<style>
+  :root {
+    --canvas: #F4F6FA;
+    --sidebar: #EDF1F7;
+    --surface: #FFFFFF;
+    --surface-elevated: #FFFFFF;
+    --surface-subtle: #F8FAFC;
+    --surface-hover: #E8EEF7;
+    --surface-selected: #DBEAFE;
+    --border: #E2E8F0;
+    --border-strong: #CBD5E1;
+    --text-primary: #0F172A;
+    --text-secondary: #475569;
+    --text-muted: #64748B;
+    --accent: #2563EB;
+    --accent-hover: #1D4ED8;
+    --accent-soft: #EFF6FF;
+    --accent-on: #FFFFFF;
+    --success: #059669;
+    --success-soft: #ECFDF5;
+    --warning: #D97706;
+    --warning-soft: #FFFBEB;
+    --danger: #DC2626;
+    --danger-soft: #FEF2F2;
+    --bubble-out: #2563EB;
+    --bubble-out-text: #FFFFFF;
+    --bubble-in: #FFFFFF;
+    --bubble-in-text: #0F172A;
+    --android: #10B981;
+    --windows: #2563EB;
+    --ios: #6366F1;
+    --glass-bg: rgba(244, 246, 250, 0.82);
+    --glass-tab: rgba(255, 255, 255, 0.86);
+    --sheet-backdrop: rgba(15, 23, 42, 0.42);
+    --page-bg: radial-gradient(circle at 18% 15%, #DBEAFE 0%, #EFF6FF 32%, #E2E8F0 100%);
+    --panel-bg: rgba(255, 255, 255, 0.82);
+    --shadow-card: 0 2px 10px rgba(15, 23, 42, 0.04);
+  }
+
+  [data-theme="dark"] {
+    --canvas: #0B1120;
+    --sidebar: #0F172A;
+    --surface: #162032;
+    --surface-elevated: #1E293B;
+    --surface-subtle: #111A2B;
+    --surface-hover: #243248;
+    --surface-selected: #1E3A5F;
+    --border: #263449;
+    --border-strong: #334155;
+    --text-primary: #F1F5F9;
+    --text-secondary: #94A3B8;
+    --text-muted: #64748B;
+    --accent: #3B82F6;
+    --accent-hover: #60A5FA;
+    --accent-soft: #172554;
+    --accent-on: #FFFFFF;
+    --success: #10B981;
+    --success-soft: #064E3B;
+    --warning: #F59E0B;
+    --warning-soft: #451A03;
+    --danger: #EF4444;
+    --danger-soft: #450A0A;
+    --bubble-out: #2563EB;
+    --bubble-out-text: #FFFFFF;
+    --bubble-in: #1E293B;
+    --bubble-in-text: #F1F5F9;
+    --glass-bg: rgba(11, 17, 32, 0.82);
+    --glass-tab: rgba(22, 32, 50, 0.88);
+    --sheet-backdrop: rgba(2, 6, 23, 0.68);
+    --page-bg: radial-gradient(circle at 18% 15%, #172554 0%, #0F172A 40%, #020617 100%);
+    --panel-bg: rgba(22, 32, 50, 0.84);
+    --shadow-card: 0 4px 16px rgba(2, 6, 23, 0.34);
+  }
+
+  * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--page-bg);
+    color: var(--text-primary);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 28px 20px 44px;
+    transition: background 0.25s ease, color 0.25s ease;
+  }
+
+  .mono {
+    font-family: "SF Mono", ui-monospace, Menlo, Monaco, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .workspace {
+    display: flex;
+    gap: 28px;
+    max-width: 1120px;
+    width: 100%;
+    align-items: flex-start;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  /* Left Spec & Scene Switcher Panel */
+  .inspector {
+    width: 340px;
+    background: var(--panel-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    padding: 22px;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+  }
+
+  .brand-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .brand-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #2563EB 0%, #6366F1 100%);
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+    flex-shrink: 0;
+  }
+
+  .inspector h1 {
+    font-size: 18px;
+    margin: 0;
+    letter-spacing: -0.2px;
+  }
+
+  .inspector .subtitle {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    margin: 2px 0 0;
+  }
+
+  .section-label {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0.4px;
+    margin: 18px 0 8px;
+    text-transform: uppercase;
+  }
+
+  .theme-switch {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    background: var(--surface-subtle);
+    border: 1px solid var(--border);
+    padding: 4px;
+    border-radius: 12px;
+  }
+
+  .theme-btn {
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    padding: 8px 10px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.18s ease;
+  }
+
+  .theme-btn.active {
+    background: var(--surface);
+    color: var(--accent);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+  }
+
+  .scene-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .scene-btn {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-primary);
+    border-radius: 11px;
+    padding: 9px 10px;
+    font-size: 12.5px;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    transition: all 0.16s ease;
+  }
+
+  .scene-btn:hover {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+
+  .scene-btn.active {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #FFFFFF;
+  }
+
+  .token-strip {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+
+  .token-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-size: 11.5px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+  }
+
+  .swatch {
+    width: 10px;
+    height: 10px;
+    border-radius: 99px;
+  }
+
+  .spec-notes {
+    margin-top: 16px;
+    padding: 12px;
+    border-radius: 12px;
+    background: var(--surface-subtle);
+    border: 1px solid var(--border);
+    font-size: 12px;
+    line-height: 1.65;
+    color: var(--text-secondary);
+  }
+
+  .spec-notes ul {
+    margin: 6px 0 0;
+    padding-left: 16px;
+  }
+
+  /* iPhone 16 Pro Hardware Mockup */
+  .phone-shell {
+    width: 404px;
+    height: 856px;
+    border-radius: 56px;
+    background: linear-gradient(145deg, #2C3340 0%, #11151C 52%, #242A36 100%);
+    padding: 12px;
+    box-shadow:
+      0 32px 70px rgba(15, 23, 42, 0.34),
+      0 0 0 1px rgba(255, 255, 255, 0.14) inset,
+      0 0 0 3px #090C12;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .phone-screen {
+    width: 100%;
+    height: 100%;
+    border-radius: 44px;
+    background: var(--canvas);
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    transition: background 0.25s ease;
+  }
+
+  /* Status Bar + Dynamic Island */
+  .status-bar {
+    height: 52px;
+    padding: 14px 26px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    position: relative;
+    z-index: 25;
+    flex-shrink: 0;
+  }
+
+  .dynamic-island {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 118px;
+    height: 32px;
+    border-radius: 20px;
+    background: #000000;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 11px;
+  }
+
+  .camera-lens {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #2B4C8C 0%, #0D1626 65%, #000 100%);
+    border: 1px solid #1E293B;
+  }
+
+  .status-icons {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* Screen Viewport */
+  .viewport {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: relative;
+    scrollbar-width: none;
+  }
+  .viewport::-webkit-scrollbar { display: none; }
+
+  .screen {
+    display: none;
+    padding: 4px 16px 104px;
+    min-height: 100%;
+  }
+
+  .screen.active { display: block; }
+
+  .screen-conv {
+    display: none;
+    flex-direction: column;
+    height: 100%;
+  }
+  .screen-conv.active { display: flex; }
+
+  /* Large iOS Navigation Title */
+  .nav-large-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 2px 12px;
+  }
+
+  .nav-large-title {
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -0.6px;
+    margin: 0;
+  }
+
+  .icon-circle-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-secondary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.16s ease;
+  }
+  .icon-circle-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* Hero Card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 15px;
+    box-shadow: var(--shadow-card);
+  }
+
+  .hero-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .online-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 999px;
+    background: var(--success);
+    box-shadow: 0 0 0 4px var(--success-soft);
+    flex-shrink: 0;
+  }
+
+  .hero-name-wrap {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-width: 0;
+  }
+
+  .hero-name {
+    font-size: 16px;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .pill-success { background: var(--success-soft); color: var(--success); }
+  .pill-accent { background: var(--accent-soft); color: var(--accent); }
+  .pill-neutral { background: var(--surface-subtle); color: var(--text-secondary); border: 1px solid var(--border); }
+  .pill-warning { background: var(--warning-soft); color: var(--warning); }
+  .pill-danger { background: var(--danger-soft); color: var(--danger); }
+
+  .ip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  .ip-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    border-radius: 8px;
+    background: var(--surface-subtle);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .ip-chip:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+
+  .quick-actions {
+    display: grid;
+    grid-template-columns: 1.15fr 1fr 0.92fr;
+    gap: 8px;
+    margin-top: 13px;
+  }
+
+  .btn {
+    border: none;
+    border-radius: 12px;
+    padding: 10px 8px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    transition: transform 0.12s ease, opacity 0.15s ease, background 0.15s ease;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: var(--accent); color: var(--accent-on); }
+  .btn-tonal { background: var(--accent-soft); color: var(--accent); }
+  .btn-outline { background: var(--surface); color: var(--text-primary); border: 1px solid var(--border); }
+  .btn-danger-soft { background: var(--danger-soft); color: var(--danger); }
+
+  .list-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 18px 4px 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  .device-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .device-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 13px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    box-shadow: var(--shadow-card);
+    transition: border-color 0.16s ease, transform 0.12s ease;
+  }
+  .device-card:hover { border-color: var(--accent); }
+  .device-card:active { transform: scale(0.985); }
+
+  .platform-badge {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .platform-windows { background: rgba(37, 99, 235, 0.12); color: var(--windows); }
+  .platform-android { background: rgba(16, 185, 129, 0.13); color: var(--android); }
+  .platform-ios { background: rgba(99, 102, 241, 0.14); color: var(--ios); }
+
+  .device-meta { flex: 1; min-width: 0; }
+  .device-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+  }
+  .device-name {
+    font-size: 15px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .device-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 3px;
+  }
+
+  /* Banner */
+  .info-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: var(--warning-soft);
+    border: 1px solid rgba(217, 119, 6, 0.25);
+    color: var(--warning);
+    font-size: 12px;
+    margin-bottom: 10px;
+  }
+
+  /* Conversation Screen */
+  .conv-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 14px 10px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .back-btn {
+    border: none;
+    background: transparent;
+    color: var(--accent);
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    font-size: 15px;
+    font-weight: 500;
+    padding: 4px 2px;
+    cursor: pointer;
+  }
+
+  .conv-peer-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .conv-peer-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .conv-peer-sub {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    margin-top: 1px;
+  }
+
+  .conv-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px 14px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    scrollbar-width: none;
+  }
+  .conv-messages::-webkit-scrollbar { display: none; }
+
+  .msg-wrap {
+    display: flex;
+    flex-direction: column;
+    max-width: 84%;
+  }
+  .msg-wrap.out { align-self: flex-end; align-items: flex-end; }
+  .msg-wrap.in { align-self: flex-start; align-items: flex-start; }
+
+  .bubble {
+    padding: 10px 13px;
+    border-radius: 16px;
+    font-size: 14px;
+    line-height: 1.5;
+    word-break: break-word;
+    user-select: text;
+  }
+  .bubble.out {
+    background: var(--bubble-out);
+    color: var(--bubble-out-text);
+    border-bottom-right-radius: 5px;
+  }
+  .bubble.in {
+    background: var(--bubble-in);
+    color: var(--bubble-in-text);
+    border: 1px solid var(--border);
+    border-bottom-left-radius: 5px;
+  }
+
+  .msg-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .meta-link {
+    border: none;
+    background: transparent;
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  .task-card {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 13px;
+    box-shadow: var(--shadow-card);
+  }
+
+  .task-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .progress-track {
+    height: 7px;
+    border-radius: 99px;
+    background: var(--surface-subtle);
+    overflow: hidden;
+    margin: 10px 0 6px;
+    border: 1px solid var(--border);
+  }
+
+  .progress-fill {
+    height: 100%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, #2563EB 0%, #0EA5E9 100%);
+    transition: width 0.3s ease;
+  }
+
+  .task-stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11.5px;
+    color: var(--text-secondary);
+  }
+
+  .file-subrow {
+    margin-top: 8px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: var(--surface-subtle);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 12px;
+  }
+
+  .file-subrow-name {
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Pending Queue & Glass Composer */
+  .pending-strip {
+    padding: 8px 12px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .pending-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 8px;
+    border-radius: 8px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 11.5px;
+    font-weight: 600;
+  }
+
+  .composer {
+    background: var(--glass-tab);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border);
+    padding: 8px 12px 24px;
+    flex-shrink: 0;
+  }
+
+  .tool-pills {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .tool-pill {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-secondary);
+    border-radius: 999px;
+    padding: 5px 10px;
+    font-size: 11.5px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .tool-pill:hover { border-color: var(--accent); color: var(--accent); }
+
+  .input-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .text-input {
+    flex: 1;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-primary);
+    border-radius: 14px;
+    padding: 9px 12px;
+    font-size: 14px;
+    outline: none;
+    font-family: inherit;
+  }
+  .text-input:focus { border-color: var(--accent); }
+
+  .send-circle {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    border: none;
+    background: var(--accent);
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  /* History & Settings */
+  .search-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 9px 12px;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+  }
+  .search-box input {
+    border: none;
+    background: transparent;
+    color: var(--text-primary);
+    font-size: 14px;
+    width: 100%;
+    outline: none;
+  }
+
+  .segmented {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+    background: var(--surface-hover);
+    padding: 3px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+  }
+
+  .seg-btn {
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    padding: 6px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .seg-btn.active {
+    background: var(--surface);
+    color: var(--text-primary);
+    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.1);
+  }
+
+  .grouped-section-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin: 16px 8px 6px;
+  }
+
+  .grouped-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .grouped-row {
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .grouped-row:last-child { border-bottom: none; }
+
+  .ios-toggle {
+    width: 46px;
+    height: 27px;
+    border-radius: 99px;
+    background: var(--border-strong);
+    position: relative;
+    cursor: pointer;
+    transition: background 0.18s ease;
+    flex-shrink: 0;
+  }
+  .ios-toggle.on { background: var(--success); }
+  .ios-toggle::after {
+    content: "";
+    position: absolute;
+    width: 23px;
+    height: 23px;
+    border-radius: 50%;
+    background: #FFFFFF;
+    top: 2px;
+    left: 2px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transition: transform 0.18s ease;
+  }
+  .ios-toggle.on::after { transform: translateX(19px); }
+
+  /* Bottom TabBar */
+  .tabbar {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 82px;
+    padding: 8px 16px 24px;
+    background: var(--glass-tab);
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+    border-top: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    z-index: 20;
+  }
+
+  .tabbar.hidden { display: none; }
+
+  .tab-item {
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    position: relative;
+  }
+  .tab-item.active { color: var(--accent); }
+
+  .tab-badge {
+    position: absolute;
+    top: 1px;
+    right: 30%;
+    min-width: 17px;
+    height: 17px;
+    border-radius: 99px;
+    background: var(--danger);
+    color: #FFFFFF;
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+  }
+
+  .home-indicator {
+    position: absolute;
+    bottom: 7px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 132px;
+    height: 5px;
+    border-radius: 99px;
+    background: var(--text-primary);
+    opacity: 0.22;
+    z-index: 50;
+    pointer-events: none;
+  }
+
+  /* Toast */
+  .toast {
+    position: absolute;
+    top: 56px;
+    left: 50%;
+    transform: translate(-50%, -18px);
+    background: var(--text-primary);
+    color: var(--canvas);
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 600;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.22s ease;
+    z-index: 60;
+    white-space: nowrap;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.28);
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  /* Sheets & Overlays */
+  .overlay {
+    position: absolute;
+    inset: 0;
+    background: var(--sheet-backdrop);
+    display: none;
+    flex-direction: column;
+    justify-content: flex-end;
+    z-index: 40;
+  }
+  .overlay.open { display: flex; }
+
+  .sheet {
+    background: var(--canvas);
+    border-top-left-radius: 26px;
+    border-top-right-radius: 26px;
+    padding: 10px 18px 30px;
+    border-top: 1px solid var(--border);
+    max-height: 86%;
+    overflow-y: auto;
+    animation: slideUp 0.22s ease;
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(34px); opacity: 0.7; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .grabber {
+    width: 38px;
+    height: 5px;
+    border-radius: 99px;
+    background: var(--border-strong);
+    margin: 0 auto 12px;
+  }
+
+  .sheet-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .sheet-title {
+    font-size: 17px;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .qr-card {
+    background: #FFFFFF;
+    border-radius: 20px;
+    padding: 18px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto 14px;
+    width: 224px;
+    height: 224px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);
+  }
+
+  .sas-box {
+    background: var(--accent-soft);
+    border: 1.5px solid var(--accent);
+    border-radius: 16px;
+    padding: 16px;
+    text-align: center;
+    margin: 14px 0;
+  }
+  .sas-code {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: 5px;
+    color: var(--accent);
+  }
+
+  /* Fullscreen QR Scanner */
+  .scanner-cover {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 42%, #1E293B 0%, #090D16 70%, #020408 100%);
+    color: #FFFFFF;
+    display: none;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 58px 20px 38px;
+    z-index: 45;
+  }
+  .scanner-cover.open { display: flex; }
+
+  .reticle-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+  }
+
+  .reticle {
+    width: 230px;
+    height: 230px;
+    border-radius: 24px;
+    border: 2px solid rgba(59, 130, 246, 0.45);
+    box-shadow: 0 0 0 999px rgba(2, 6, 23, 0.45);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .reticle-corner {
+    position: absolute;
+    width: 28px;
+    height: 28px;
+    border-color: #3B82F6;
+    border-style: solid;
+  }
+  .rc-tl { top: -1px; left: -1px; border-width: 4px 0 0 4px; border-top-left-radius: 22px; }
+  .rc-tr { top: -1px; right: -1px; border-width: 4px 4px 0 0; border-top-right-radius: 22px; }
+  .rc-bl { bottom: -1px; left: -1px; border-width: 0 0 4px 4px; border-bottom-left-radius: 22px; }
+  .rc-br { bottom: -1px; right: -1px; border-width: 0 4px 4px 0; border-bottom-right-radius: 22px; }
+
+  .scan-line {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    height: 2.5px;
+    background: linear-gradient(90deg, transparent, #60A5FA, transparent);
+    box-shadow: 0 0 12px #3B82F6;
+    animation: scanMove 2.2s ease-in-out infinite;
+  }
+
+  @keyframes scanMove {
+    0%, 100% { top: 18px; opacity: 0.7; }
+    50% { top: 206px; opacity: 1; }
+  }
+</style>
+</head>
+<body data-theme="light">
+<div class="workspace">
+  <!-- Left Inspector -->
+  <aside class="inspector">
+    <div class="brand-row">
+      <div class="brand-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1.3" fill="currentColor"/></svg>
+      </div>
+      <div>
+        <h1>LanTransfer iOS UI 原型</h1>
+        <p class="subtitle">SwiftUI · iOS 17+ · Apple HIG 视觉规范</p>
+      </div>
+    </div>
+
+    <div class="section-label">外观主题（同步 design-tokens.json）</div>
+    <div class="theme-switch">
+      <button class="theme-btn active" id="btnLight" onclick="setTheme('light')">☀ 浅色模式</button>
+      <button class="theme-btn" id="btnDark" onclick="setTheme('dark')">🌙 深色模式</button>
+    </div>
+
+    <div class="section-label">页面与弹窗快捷预览</div>
+    <div class="scene-grid">
+      <button class="scene-btn active" data-scene="devices" onclick="openTab('devices')">📡 附近设备</button>
+      <button class="scene-btn" data-scene="conv" onclick="openConversation()">💬 对端会话</button>
+      <button class="scene-btn" data-scene="history" onclick="openTab('history')">🕒 传输记录</button>
+      <button class="scene-btn" data-scene="settings" onclick="openTab('settings')">⚙️ 应用设置</button>
+      <button class="scene-btn" data-scene="qr-show" onclick="openOverlay('qrShowOverlay')">🔳 本机二维码</button>
+      <button class="scene-btn" data-scene="qr-scan" onclick="openScanner()">📷 相机扫码</button>
+      <button class="scene-btn" data-scene="manual" onclick="openOverlay('manualOverlay')">🌐 手动连接</button>
+      <button class="scene-btn" data-scene="pairing" onclick="openOverlay('pairingOverlay')">🔐 SAS 配对</button>
+      <button class="scene-btn" data-scene="offer" onclick="openOverlay('offerOverlay')">📥 接收文件</button>
+      <button class="scene-btn" data-scene="share" onclick="openOverlay('shareOverlay')">↗️ 系统分享</button>
+    </div>
+
+    <div class="section-label">跨端语义配色与平台徽章</div>
+    <div class="token-strip">
+      <span class="token-chip"><span class="swatch" style="background:#2563EB"></span>主色 #2563EB</span>
+      <span class="token-chip"><span class="swatch" style="background:#10B981"></span>Android</span>
+      <span class="token-chip"><span class="swatch" style="background:#2563EB"></span>Windows</span>
+      <span class="token-chip"><span class="swatch" style="background:#6366F1"></span>iOS</span>
+    </div>
+
+    <div class="spec-notes">
+      <strong>可交互体验提示：</strong>
+      <ul>
+        <li>可直接点击手机内的<strong>底部标签栏</strong>、<strong>IP 芯片复制</strong>、<strong>设备卡片进入会话</strong>。</li>
+        <li>在会话页可输入文字并发送气泡，测试无损复制提示与进度操作。</li>
+        <li>在设置页切换主题或开关，可观察 SwiftUI 原生分组卡片与控件反馈。</li>
+      </ul>
+    </div>
+  </aside>
+
+  <!-- Right iPhone 16 Pro Mockup -->
+  <main class="phone-shell">
+    <div class="phone-screen">
+      <!-- Status Bar -->
+      <div class="status-bar">
+        <span class="tabular">9:41</span>
+        <div class="dynamic-island"><div class="camera-lens"></div></div>
+        <div class="status-icons">
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><rect x="0" y="7" width="3" height="5" rx="1"/><rect x="4" y="5" width="3" height="7" rx="1"/><rect x="8" y="2.5" width="3" height="9.5" rx="1"/><rect x="12" y="0" width="3" height="12" rx="1"/></svg>
+          <svg width="15" height="12" viewBox="0 0 18 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M1.5 4.8C5.6 1.2 12.4 1.2 16.5 4.8"/><path d="M4.5 8.1C7.1 5.9 10.9 5.9 13.5 8.1"/><circle cx="9" cy="11.4" r="1.4" fill="currentColor" stroke="none"/></svg>
+          <svg width="24" height="12" viewBox="0 0 26 13" fill="none"><rect x="1" y="1" width="21" height="11" rx="3" stroke="currentColor" stroke-width="1.4"/><rect x="3" y="3" width="16" height="7" rx="1.5" fill="currentColor"/><path d="M23.5 4.5V8.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </div>
+      </div>
+
+      <!-- Toast -->
+      <div class="toast" id="toast">已复制 192.168.1.28:42580</div>
+
+      <!-- Main Viewport -->
+      <div class="viewport">
+        <!-- TAB 1: DEVICES -->
+        <section class="screen active" id="screen-devices">
+          <div class="nav-large-row">
+            <h2 class="nav-large-title">局域网传输</h2>
+            <button class="icon-circle-btn" onclick="toggleTheme()" title="切换浅色/深色主题" aria-label="切换主题">
+              <svg id="themeIcon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            </button>
+          </div>
+
+          <!-- Local Device Hero Card -->
+          <div class="card">
+            <div class="hero-top">
+              <div class="hero-name-wrap">
+                <span class="online-dot"></span>
+                <span class="hero-name">iPhone 16 Pro</span>
+              </div>
+              <span class="pill pill-success">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                端到端加密
+              </span>
+            </div>
+
+            <div class="ip-row">
+              <button class="ip-chip mono" onclick="showToast('已复制 192.168.1.28:42580')">
+                <span>192.168.1.28:42580</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              </button>
+              <button class="ip-chip mono" onclick="showToast('已复制热点地址 172.20.10.1:42580')">
+                <span>172.20.10.1:42580</span>
+              </button>
+            </div>
+
+            <div class="quick-actions">
+              <button class="btn btn-primary" onclick="openScanner()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/></svg>
+                扫描二维码
+              </button>
+              <button class="btn btn-tonal" onclick="openOverlay('qrShowOverlay')">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM18 18h3v3h-3z"/></svg>
+                二维码配对
+              </button>
+              <button class="btn btn-outline" onclick="openOverlay('manualOverlay')">
+                手动连接
+              </button>
+            </div>
+          </div>
+
+          <div class="list-header">
+            <span>局域网设备</span>
+            <span class="mono" style="font-size:11.5px;color:var(--text-muted)">3 台在线</span>
+          </div>
+
+          <div class="device-list">
+            <div class="device-card" onclick="openConversation()">
+              <div class="platform-badge platform-windows">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+              </div>
+              <div class="device-meta">
+                <div class="device-title-row">
+                  <span class="device-name">Wjb-Workstation</span>
+                  <span class="pill pill-success">已连接</span>
+                </div>
+                <div class="device-sub mono">Windows · 192.168.1.100:42580</div>
+              </div>
+            </div>
+
+            <div class="device-card" onclick="openConversation()">
+              <div class="platform-badge platform-android">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2.5"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+              </div>
+              <div class="device-meta">
+                <div class="device-title-row">
+                  <span class="device-name">Pixel 9 Pro</span>
+                  <span class="pill pill-accent">已信任</span>
+                </div>
+                <div class="device-sub mono">Android · 192.168.1.118:42580</div>
+              </div>
+            </div>
+
+            <div class="device-card" onclick="openOverlay('pairingOverlay')">
+              <div class="platform-badge platform-ios">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><line x1="10" y1="5" x2="14" y2="5"/></svg>
+              </div>
+              <div class="device-meta">
+                <div class="device-title-row">
+                  <span class="device-name">iPad Pro M4</span>
+                  <span class="pill pill-neutral">未配对</span>
+                </div>
+                <div class="device-sub mono">iOS · 192.168.1.142:42580</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- CONVERSATION SCREEN -->
+        <section class="screen-conv" id="screen-conv">
+          <div class="conv-header">
+            <button class="back-btn" onclick="openTab('devices')">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+              设备
+            </button>
+            <div class="platform-badge platform-windows" style="width:32px;height:32px;border-radius:9px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            </div>
+            <div class="conv-peer-info">
+              <div class="conv-peer-title">
+                <span>Wjb-Workstation</span>
+                <span class="online-dot" style="width:7px;height:7px;box-shadow:none"></span>
+              </div>
+              <div class="conv-peer-sub mono">Windows · 192.168.1.100:42580</div>
+            </div>
+            <button class="icon-circle-btn" onclick="openOverlay('offerOverlay')" title="预览接收弹窗" style="width:30px;height:30px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </button>
+          </div>
+
+          <div class="conv-messages" id="convMessages">
+            <div class="msg-wrap in">
+              <div class="bubble in">已通过 Noise_XX 端到端加密连接。请检查 iOS 设计规范与测试向量路径：`protocol/test-vectors/manifest.json`</div>
+              <div class="msg-meta">
+                <span class="mono">09:38</span>
+                <button class="meta-link" onclick="showToast('已无损复制到剪贴板')">复制</button>
+              </div>
+            </div>
+
+            <div class="msg-wrap out">
+              <div class="bubble out">收到！我把 iOS 架构文档和原型资源直接发给你，保留原始 UTF-8 与换行。</div>
+              <div class="msg-meta">
+                <span class="mono">09:39</span>
+                <span>已送达</span>
+                <button class="meta-link" onclick="showToast('已复制到剪贴板')">复制</button>
+              </div>
+            </div>
+
+            <!-- Active File Transfer Task Card -->
+            <div class="task-card">
+              <div class="task-top">
+                <div style="display:flex;align-items:center;gap:7px;">
+                  <span class="pill pill-success">接收</span>
+                  <span style="font-size:13.5px;font-weight:700;">2 个文件 · <span class="mono">148.6 MB</span></span>
+                </div>
+                <span style="font-size:12px;font-weight:600;color:var(--accent)">传输中</span>
+              </div>
+
+              <div class="progress-track"><div class="progress-fill" id="demoProgress" style="width:72%"></div></div>
+              <div class="task-stats mono">
+                <span>72% · 107.0 / 148.6 MB</span>
+                <span>64.2 MB/s · 约 1 秒</span>
+              </div>
+
+              <div class="file-subrow">
+                <div style="min-width:0">
+                  <div class="file-subrow-name">LanTransfer-Release-Notes.pdf</div>
+                  <div class="mono" style="font-size:11px;color:var(--text-muted)">4.2 MB · 已完成</div>
+                </div>
+                <div style="display:flex;gap:6px;flex-shrink:0">
+                  <button class="meta-link" onclick="showToast('已调用 QuickLook 预览')">预览</button>
+                  <button class="meta-link" onclick="showToast('已在“文件”App 中定位')">查看</button>
+                </div>
+              </div>
+
+              <div class="file-subrow">
+                <div style="min-width:0">
+                  <div class="file-subrow-name">Demo_4K_ScreenRecord.mov</div>
+                  <div class="mono" style="font-size:11px;color:var(--text-muted)">144.4 MB · 接收中</div>
+                </div>
+                <button class="meta-link" style="color:var(--danger)" onclick="showToast('已暂停，可随时断点续传')">取消</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="pending-strip">
+            <div style="display:flex;align-items:center;gap:6px;min-width:0;overflow:hidden;">
+              <span class="pending-chip">IMG_2084.HEIC · 3.8 MB ×</span>
+            </div>
+            <button class="btn btn-primary" style="padding:6px 11px;font-size:12px;border-radius:9px;" onclick="showToast('已发起文件传输邀请')">发送文件</button>
+          </div>
+
+          <div class="composer">
+            <div class="tool-pills">
+              <button class="tool-pill" onclick="showToast('打开 iOS 文件选择器')">📄 文件</button>
+              <button class="tool-pill" onclick="showToast('打开 PhotosPicker 系统相册')">🖼 相册</button>
+              <button class="tool-pill" onclick="pasteSample()">📋 粘贴</button>
+              <button class="tool-pill" onclick="sendClipboardNow()">⚡ 发送剪贴板</button>
+            </div>
+            <div class="input-row">
+              <input class="text-input" id="msgInput" placeholder="输入要发送的文字（支持无损 UTF-8）…" onkeydown="if(event.key==='Enter')sendMessage()">
+              <button class="send-circle" onclick="sendMessage()" aria-label="发送">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 2: HISTORY -->
+        <section class="screen" id="screen-history">
+          <div class="nav-large-row">
+            <h2 class="nav-large-title">传输记录</h2>
+            <button class="meta-link" style="color:var(--danger);font-size:13.5px;" onclick="showToast('弹出确认：仅清除记录，不删除本地文件')">清空记录</button>
+          </div>
+
+          <div class="search-box">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input placeholder="搜索文字、文件名或设备名…" oninput="filterHistory(this.value)">
+          </div>
+
+          <div class="segmented" id="historyFilter">
+            <button class="seg-btn active" onclick="setHistoryType('all', this)">全部</button>
+            <button class="seg-btn" onclick="setHistoryType('text', this)">文字</button>
+            <button class="seg-btn" onclick="setHistoryType('file', this)">文件</button>
+          </div>
+
+          <div class="device-list" id="historyList">
+            <div class="card history-item" data-type="file" data-key="LanTransfer-Setup-1.0.0.exe Wjb-Workstation">
+              <div class="task-top">
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <span class="pill pill-success">接收</span>
+                  <strong style="font-size:14px;">Wjb-Workstation</strong>
+                </div>
+                <span class="mono" style="font-size:11.5px;color:var(--text-muted)">2026-11-23 09:35</span>
+              </div>
+              <div style="margin-top:8px;font-size:13.5px;font-weight:600;">Design_Assets_2026.zip <span class="mono" style="font-weight:400;color:var(--text-muted)">· 42.8 MB</span></div>
+              <div class="mono" style="margin-top:3px;font-size:11.5px;color:var(--text-muted)">我的 iPhone / 局域网传输 / Design_Assets_2026.zip</div>
+              <div style="display:flex;gap:12px;margin-top:9px;">
+                <button class="meta-link" onclick="showToast('使用 QuickLook 打开文件')">打开文件</button>
+                <button class="meta-link" onclick="showToast('已在“文件”App 中打开目录')">在“文件”中查看</button>
+                <button class="meta-link" onclick="showToast('已复制文件路径')">复制路径</button>
+              </div>
+            </div>
+
+            <div class="card history-item" data-type="text" data-key="Pixel 9 Pro 测试验证码 192.168">
+              <div class="task-top">
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <span class="pill pill-accent">发送</span>
+                  <strong style="font-size:14px;">Pixel 9 Pro</strong>
+                </div>
+                <span class="mono" style="font-size:11.5px;color:var(--text-muted)">2026-11-23 09:12</span>
+              </div>
+              <div style="margin-top:8px;font-size:13px;color:var(--text-secondary);line-height:1.45;">ssh -p 2222 dev@192.168.1.100 &amp;&amp; swift test --package-path ios/Packages/LanTransferCore</div>
+              <div style="display:flex;gap:12px;margin-top:9px;">
+                <button class="meta-link" onclick="showToast('已无损复制完整文字')">复制文字</button>
+              </div>
+            </div>
+
+            <div class="card history-item" data-type="file" data-key="iPad Pro M4 演讲稿 Keynote 中断">
+              <div class="task-top">
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <span class="pill pill-warning">中断</span>
+                  <strong style="font-size:14px;">iPad Pro M4</strong>
+                </div>
+                <span class="mono" style="font-size:11.5px;color:var(--text-muted)">2026-11-22 21:40</span>
+              </div>
+              <div style="margin-top:8px;font-size:13.5px;font-weight:600;">Keynote_Product_Launch.key <span class="mono" style="font-weight:400;color:var(--text-muted)">· 318.0 MB</span></div>
+              <div style="font-size:12px;color:var(--warning);margin-top:3px;">应用转入后台暂停，进度已保存（61%）</div>
+              <div style="display:flex;gap:10px;margin-top:9px;">
+                <button class="btn btn-primary" style="padding:5px 12px;font-size:12px;border-radius:8px;" onclick="showToast('正在从 61% 断点续传…')">继续</button>
+                <button class="btn btn-outline" style="padding:5px 12px;font-size:12px;border-radius:8px;" onclick="showToast('已取消任务并清理临时分片')">取消</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 3: SETTINGS -->
+        <section class="screen" id="screen-settings">
+          <div class="nav-large-row">
+            <h2 class="nav-large-title">设置</h2>
+          </div>
+
+          <div class="grouped-section-title">外观主题</div>
+          <div class="card" style="padding:12px;">
+            <div class="segmented" style="margin-bottom:0;">
+              <button class="seg-btn" id="segSystem" onclick="setTheme('light', 'system')">跟随系统</button>
+              <button class="seg-btn active" id="segLight" onclick="setTheme('light', 'light')">浅色</button>
+              <button class="seg-btn" id="segDark" onclick="setTheme('dark', 'dark')">深色</button>
+            </div>
+          </div>
+
+          <div class="grouped-section-title">本机信息</div>
+          <div class="grouped-card">
+            <div class="grouped-row">
+              <input class="text-input" value="iPhone 16 Pro" style="border:none;padding:2px 0;background:transparent;font-weight:600;">
+              <button class="btn btn-tonal" style="padding:6px 12px;font-size:12px;border-radius:8px;" onclick="showToast('已保存本机设备名')">保存</button>
+            </div>
+            <div class="grouped-row">
+              <span style="font-size:13px;color:var(--text-secondary)">设备标识摘要</span>
+              <span class="mono" style="font-size:12px;color:var(--text-muted)">A9F2-7C04-E118</span>
+            </div>
+          </div>
+
+          <div class="grouped-section-title">传输与存储</div>
+          <div class="grouped-card">
+            <div class="grouped-row" style="flex-direction:column;align-items:flex-start;gap:4px;">
+              <div style="font-size:13.5px;font-weight:600;">保存位置</div>
+              <div style="font-size:12px;color:var(--text-muted);">“文件”App → 我的 iPhone → 局域网传输</div>
+              <button class="meta-link" style="margin-top:2px;font-size:12.5px;" onclick="showToast('正在打开“文件”App 目录')">在“文件”中打开</button>
+            </div>
+            <div class="grouped-row">
+              <div>
+                <div style="font-size:13.5px;font-weight:600;">自动复制收到的文字</div>
+                <div style="font-size:11.5px;color:var(--text-muted);">仅在应用前台收到文字时写入剪贴板</div>
+              </div>
+              <div class="ios-toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+
+          <div class="grouped-section-title">后台与权限</div>
+          <div class="grouped-card">
+            <div class="grouped-row" style="flex-direction:column;align-items:flex-start;gap:5px;">
+              <div style="font-size:13px;font-weight:600;">关于 iOS 后台传输</div>
+              <div style="font-size:12px;color:var(--text-secondary);line-height:1.5;">切至后台后系统仅允许短暂继续传输；传输中断后回到前台可一键断点续传。大文件传输期间应用会自动保持屏幕常亮。</div>
+            </div>
+            <div class="grouped-row" style="cursor:pointer;" onclick="showToast('跳转到 iOS 系统设置页面')">
+              <span style="font-size:13.5px;color:var(--accent);font-weight:600;">本地网络与通知设置</span>
+              <span style="color:var(--text-muted)">›</span>
+            </div>
+          </div>
+
+          <div class="grouped-section-title">已信任设备</div>
+          <div class="grouped-card">
+            <div class="grouped-row">
+              <div>
+                <div style="font-size:13.5px;font-weight:600;">Wjb-Workstation</div>
+                <div style="font-size:11.5px;color:var(--text-muted);">Windows · 自动接收文件</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div class="ios-toggle on" onclick="this.classList.toggle('on')"></div>
+                <button class="meta-link" style="color:var(--danger)" onclick="showToast('确认解除信任 Wjb-Workstation？')">解除</button>
+              </div>
+            </div>
+            <div class="grouped-row">
+              <div>
+                <div style="font-size:13.5px;font-weight:600;">Pixel 9 Pro</div>
+                <div style="font-size:11.5px;color:var(--text-muted);">Android · 自动接收文件</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div class="ios-toggle" onclick="this.classList.toggle('on')"></div>
+                <button class="meta-link" style="color:var(--danger)" onclick="showToast('确认解除信任 Pixel 9 Pro？')">解除</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Bottom TabBar -->
+      <nav class="tabbar" id="tabbar">
+        <button class="tab-item active" id="tab-devices" onclick="openTab('devices')">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1.2" fill="currentColor"/></svg>
+          附近设备
+        </button>
+        <button class="tab-item" id="tab-history" onclick="openTab('history')">
+          <span class="tab-badge">1</span>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></svg>
+          传输记录
+        </button>
+        <button class="tab-item" id="tab-settings" onclick="openTab('settings')">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.6.85 1 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          设置
+        </button>
+      </nav>
+
+      <!-- SHEET: QR SHOW -->
+      <div class="overlay" id="qrShowOverlay" onclick="if(event.target===this)closeOverlays()">
+        <div class="sheet">
+          <div class="grabber"></div>
+          <div class="sheet-head">
+            <h3 class="sheet-title">二维码配对</h3>
+            <button class="meta-link" style="font-size:14px;" onclick="closeOverlays()">完成</button>
+          </div>
+          <div class="qr-card" id="qrSvgHost"></div>
+          <div style="text-align:center;font-size:12.5px;color:var(--text-secondary);margin-bottom:10px;">
+            请使用另一台设备的「扫描二维码」扫码配对
+          </div>
+          <div style="display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin-bottom:12px;">
+            <span class="ip-chip mono">192.168.1.28:42580</span>
+            <span class="ip-chip mono">172.20.10.1:42580</span>
+          </div>
+          <div class="info-banner" style="margin-bottom:12px;">
+            <span>二维码包含一次性配对令牌（5 分钟自动刷新），请勿将截屏发送给他人。</span>
+          </div>
+          <button class="btn btn-tonal" style="width:100%;" onclick="renderQrMatrix();showToast('已刷新一次性配对令牌')">立即刷新二维码</button>
+        </div>
+      </div>
+
+      <!-- FULLSCREEN: QR SCANNER -->
+      <div class="scanner-cover" id="scannerCover">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <button class="btn" style="background:rgba(255,255,255,0.14);color:#FFF;padding:8px 14px;" onclick="closeScanner()">取消</button>
+          <span style="font-size:15px;font-weight:700;">扫描二维码</span>
+          <button class="btn" id="torchBtn" style="background:rgba(255,255,255,0.14);color:#FFF;padding:8px 12px;" onclick="toggleTorch()">🔦 补光</button>
+        </div>
+
+        <div class="reticle-wrap">
+          <div class="reticle">
+            <div class="reticle-corner rc-tl"></div>
+            <div class="reticle-corner rc-tr"></div>
+            <div class="reticle-corner rc-bl"></div>
+            <div class="reticle-corner rc-br"></div>
+            <div class="scan-line"></div>
+          </div>
+          <div style="font-size:13px;color:rgba(241,245,249,0.88);text-align:center;">将对端屏幕上的 LanTransfer 二维码置于框内</div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:8px;align-items:center;">
+          <button class="btn btn-primary" style="width:100%;max-width:260px;" onclick="closeScanner();openOverlay('pairingOverlay');showToast('已解析 LT1: 二维码配对信息')">模拟扫码成功</button>
+          <button class="btn" style="background:rgba(255,255,255,0.12);color:#E2E8F0;width:100%;max-width:260px;" onclick="closeScanner();openOverlay('manualOverlay')">改为手动连接</button>
+        </div>
+      </div>
+
+      <!-- SHEET: MANUAL CONNECT -->
+      <div class="overlay" id="manualOverlay" onclick="if(event.target===this)closeOverlays()">
+        <div class="sheet">
+          <div class="grabber"></div>
+          <div class="sheet-head">
+            <h3 class="sheet-title">手动连接</h3>
+            <button class="meta-link" style="font-size:14px;" onclick="closeOverlays()">取消</button>
+          </div>
+          <div style="font-size:12.5px;color:var(--text-secondary);margin-bottom:12px;">输入对方屏幕上显示的局域网 IPv4 地址（仅限本机同网段或热点）。</div>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
+            <div>
+              <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:4px;">IPv4 地址</div>
+              <input class="text-input mono" style="width:100%;" value="192.168.1.100" placeholder="例如 192.168.1.100">
+            </div>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:4px;">端口（可选，默认 42580）</div>
+              <input class="text-input mono" style="width:100%;" placeholder="42580">
+            </div>
+          </div>
+          <button class="btn btn-primary" style="width:100%;padding:12px;" onclick="closeOverlays();openConversation();showToast('已连接到 192.168.1.100:42580')">连接</button>
+        </div>
+      </div>
+
+      <!-- SHEET: SAS PAIRING -->
+      <div class="overlay" id="pairingOverlay" onclick="if(event.target===this)closeOverlays()">
+        <div class="sheet">
+          <div class="grabber"></div>
+          <div class="sheet-head">
+            <h3 class="sheet-title">确认配对验证码</h3>
+            <span class="pill pill-accent">Noise_XX</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:11px;padding:11px;border-radius:14px;background:var(--surface);border:1px solid var(--border);">
+            <div class="platform-badge platform-ios" style="width:38px;height:38px;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="2" width="12" height="20" rx="3"/><line x1="10" y1="5" x2="14" y2="5"/></svg>
+            </div>
+            <div>
+              <div style="font-size:14.5px;font-weight:700;">iPad Pro M4</div>
+              <div class="mono" style="font-size:12px;color:var(--text-muted)">iOS · 192.168.1.142:42580</div>
+            </div>
+          </div>
+          <div class="sas-box">
+            <div style="font-size:11.5px;color:var(--text-secondary);margin-bottom:4px;">请核对两台设备显示的 6 位验证码是否完全一致</div>
+            <div class="sas-code mono">482 917</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <button class="btn btn-outline" style="padding:12px;" onclick="closeOverlays();showToast('已拒绝对方配对请求')">拒绝</button>
+            <button class="btn btn-primary" style="padding:12px;" onclick="closeOverlays();showToast('配对成功，已加入信任列表')">接受并信任</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SHEET: INCOMING OFFER -->
+      <div class="overlay" id="offerOverlay" onclick="if(event.target===this)closeOverlays()">
+        <div class="sheet">
+          <div class="grabber"></div>
+          <div class="sheet-head">
+            <h3 class="sheet-title">收到文件传输请求</h3>
+            <span class="pill pill-success">已信任</span>
+          </div>
+          <div style="font-size:13px;color:var(--text-secondary);margin-bottom:10px;">
+            <strong>Wjb-Workstation</strong> 想向你发送 <strong>2 个文件</strong>（共 <span class="mono">148.6 MB</span>）：
+          </div>
+          <div class="grouped-card" style="margin-bottom:14px;">
+            <div class="grouped-row">
+              <span style="font-size:13px;font-weight:600;">LanTransfer-Release-Notes.pdf</span>
+              <span class="mono" style="font-size:12px;color:var(--text-muted)">4.2 MB</span>
+            </div>
+            <div class="grouped-row">
+              <span style="font-size:13px;font-weight:600;">Demo_4K_ScreenRecord.mov</span>
+              <span class="mono" style="font-size:12px;color:var(--text-muted)">144.4 MB</span>
+            </div>
+          </div>
+          <div style="font-size:11.5px;color:var(--text-muted);margin-bottom:14px;">保存位置：“文件”App → 我的 iPhone → 局域网传输</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <button class="btn btn-outline" style="padding:12px;" onclick="closeOverlays();showToast('已拒绝接收文件')">拒绝</button>
+            <button class="btn btn-primary" style="padding:12px;" onclick="closeOverlays();openConversation();showToast('开始高速局域网接收…')">接收</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SHEET: SHARE EXTENSION -->
+      <div class="overlay" id="shareOverlay" onclick="if(event.target===this)closeOverlays()">
+        <div class="sheet">
+          <div class="grabber"></div>
+          <div class="sheet-head">
+            <h3 class="sheet-title">选择接收设备</h3>
+            <button class="meta-link" style="font-size:14px;" onclick="closeOverlays()">取消</button>
+          </div>
+          <div class="card" style="padding:11px 13px;margin-bottom:12px;background:var(--accent-soft);border-color:rgba(37,99,235,0.22);">
+            <div style="font-size:13px;font-weight:700;color:var(--accent);">准备分享 3 个文件（共 18.4 MB）</div>
+            <div style="font-size:11.5px;color:var(--text-secondary);margin-top:2px;">来自系统“照片”App 分享菜单 · 将通过 App Group 交接给主程序</div>
+          </div>
+          <div class="device-list">
+            <div class="device-card" onclick="closeOverlays();openConversation();showToast('已移交至 Wjb-Workstation 会话发送')">
+              <div class="platform-badge platform-windows" style="width:38px;height:38px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+              </div>
+              <div class="device-meta">
+                <div class="device-title-row">
+                  <span class="device-name">Wjb-Workstation</span>
+                  <span class="pill pill-success">在线</span>
+                </div>
+                <div class="device-sub mono">Windows · 192.168.1.100</div>
+              </div>
+            </div>
+            <div class="device-card" onclick="closeOverlays();openConversation();showToast('已移交至 Pixel 9 Pro 会话发送')">
+              <div class="platform-badge platform-android" style="width:38px;height:38px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2.5"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+              </div>
+              <div class="device-meta">
+                <div class="device-title-row">
+                  <span class="device-name">Pixel 9 Pro</span>
+                  <span class="pill pill-accent">已信任</span>
+                </div>
+                <div class="device-sub mono">Android · 192.168.1.118</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="home-indicator"></div>
+    </div>
+  </main>
+</div>
+
+<script>
+  let currentTheme = 'light';
+  let historyTypeFilter = 'all';
+  let historySearchQuery = '';
+  let toastTimer = null;
+  let torchOn = false;
+
+  function setTheme(mode, segMode) {
+    currentTheme = mode;
+    document.body.setAttribute('data-theme', mode);
+    document.getElementById('btnLight').classList.toggle('active', mode === 'light');
+    document.getElementById('btnDark').classList.toggle('active', mode === 'dark');
+    const chosen = segMode || mode;
+    document.getElementById('segSystem').classList.toggle('active', chosen === 'system');
+    document.getElementById('segLight').classList.toggle('active', chosen === 'light');
+    document.getElementById('segDark').classList.toggle('active', chosen === 'dark');
+  }
+
+  function toggleTheme() {
+    setTheme(currentTheme === 'light' ? 'dark' : 'light');
+    showToast(currentTheme === 'dark' ? '已切换至深色模式' : '已切换至浅色模式');
+  }
+
+  function highlightScene(name) {
+    document.querySelectorAll('.scene-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.scene === name);
+    });
+  }
+
+  function closeOverlays() {
+    document.querySelectorAll('.overlay').forEach(el => el.classList.remove('open'));
+  }
+
+  function closeScanner() {
+    document.getElementById('scannerCover').classList.remove('open');
+  }
+
+  function openTab(tab) {
+    closeOverlays();
+    closeScanner();
+    document.querySelectorAll('.screen, .screen-conv').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen-' + tab).classList.add('active');
+    document.getElementById('tabbar').classList.remove('hidden');
+    document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    highlightScene(tab);
+  }
+
+  function openConversation() {
+    closeOverlays();
+    closeScanner();
+    document.querySelectorAll('.screen, .screen-conv').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen-conv').classList.add('active');
+    document.getElementById('tabbar').classList.add('hidden');
+    highlightScene('conv');
+  }
+
+  function openOverlay(id) {
+    closeOverlays();
+    closeScanner();
+    document.getElementById(id).classList.add('open');
+    const map = {
+      qrShowOverlay: 'qr-show',
+      manualOverlay: 'manual',
+      pairingOverlay: 'pairing',
+      offerOverlay: 'offer',
+      shareOverlay: 'share'
+    };
+    highlightScene(map[id] || 'devices');
+  }
+
+  function openScanner() {
+    closeOverlays();
+    document.getElementById('scannerCover').classList.add('open');
+    highlightScene('qr-scan');
+  }
+
+  function toggleTorch() {
+    torchOn = !torchOn;
+    const btn = document.getElementById('torchBtn');
+    btn.style.background = torchOn ? '#2563EB' : 'rgba(255,255,255,0.14)';
+    showToast(torchOn ? '手电筒已开启' : '手电筒已关闭');
+  }
+
+  function showToast(text) {
+    const el = document.getElementById('toast');
+    el.textContent = text;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 2100);
+  }
+
+  function sendMessage() {
+    const input = document.getElementById('msgInput');
+    const value = input.value;
+    if (!value) return;
+    appendOutgoingBubble(value);
+    input.value = '';
+  }
+
+  function pasteSample() {
+    document.getElementById('msgInput').value = '192.168.1.28:42580';
+    showToast('已从剪贴板粘贴');
+  }
+
+  function sendClipboardNow() {
+    appendOutgoingBubble('已一键发送剪贴板内容（原样保留空格与换行）。');
+    showToast('剪贴板文字已加密送达');
+  }
+
+  function appendOutgoingBubble(text) {
+    const host = document.getElementById('convMessages');
+    const wrap = document.createElement('div');
+    wrap.className = 'msg-wrap out';
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble out';
+    bubble.textContent = text;
+    const meta = document.createElement('div');
+    meta.className = 'msg-meta';
+    meta.innerHTML = '<span class="mono">刚刚</span><span>已送达</span><button class="meta-link" onclick="showToast(\'已复制到剪贴板\')">复制</button>';
+    wrap.appendChild(bubble);
+    wrap.appendChild(meta);
+    host.appendChild(wrap);
+    host.scrollTop = host.scrollHeight;
+  }
+
+  function setHistoryType(type, btn) {
+    historyTypeFilter = type;
+    document.querySelectorAll('#historyFilter .seg-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    applyHistoryFilter();
+  }
+
+  function filterHistory(q) {
+    historySearchQuery = q.trim().toLowerCase();
+    applyHistoryFilter();
+  }
+
+  function applyHistoryFilter() {
+    document.querySelectorAll('.history-item').forEach(item => {
+      const matchType = historyTypeFilter === 'all' || item.dataset.type === historyTypeFilter;
+      const matchText = !historySearchQuery || item.dataset.key.toLowerCase().includes(historySearchQuery);
+      item.style.display = (matchType && matchText) ? 'block' : 'none';
+    });
+  }
+
+  let qrSeed = 1337;
+  function renderQrMatrix() {
+    qrSeed = (qrSeed * 16807) % 2147483647;
+    const size = 25;
+    let seed = qrSeed;
+    const rects = [];
+    const isFinder = (r, c) =>
+      (r < 7 && c < 7) || (r < 7 && c >= size - 7) || (r >= size - 7 && c < 7);
+
+    const drawFinder = (ox, oy) => {
+      rects.push(`<rect x="${ox}" y="${oy}" width="7" height="7" rx="1.2" fill="#0F172A"/>`);
+      rects.push(`<rect x="${ox + 1}" y="${oy + 1}" width="5" height="5" rx="0.8" fill="#FFFFFF"/>`);
+      rects.push(`<rect x="${ox + 2}" y="${oy + 2}" width="3" height="3" rx="0.6" fill="#0F172A"/>`);
+    };
+    drawFinder(0, 0);
+    drawFinder(size - 7, 0);
+    drawFinder(0, size - 7);
+
+    for (let r = 0; r < size; r++) {
+      for (let c = 0; c < size; c++) {
+        if (isFinder(r, c)) continue;
+        if ((r === 7 && c < 8) || (c === 7 && r < 8)) continue;
+        if ((r === 7 && c >= size - 8) || (c === size - 8 && r < 8)) continue;
+        if ((r === size - 8 && c < 8) || (c === 7 && r >= size - 8)) continue;
+        seed = (seed * 48271) % 2147483647;
+        if (seed % 11 < 5) {
+          rects.push(`<rect x="${c}" y="${r}" width="0.92" height="0.92" rx="0.18" fill="#0F172A"/>`);
+        }
+      }
+    }
+    document.getElementById('qrSvgHost').innerHTML =
+      `<svg viewBox="-1 -1 ${size + 2} ${size + 2}" width="188" height="188" shape-rendering="crispEdges">${rects.join('')}</svg>`;
+  }
+
+  renderQrMatrix();
+</script>
+</body>
+</html>

@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 自动生成自 shared/ui-text/zh-CN.tsv，请勿手工修改 -->
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="app_name" xml:space="preserve"><value>局域网传输</value></data>
+  <data name="app_subtitle" xml:space="preserve"><value>局域网点对点安全快传</value></data>
+  <data name="device_type_android" xml:space="preserve"><value>Android</value></data>
+  <data name="device_type_windows" xml:space="preserve"><value>Windows</value></data>
+  <data name="device_type_ios" xml:space="preserve"><value>iOS</value></data>
+  <data name="nav_devices" xml:space="preserve"><value>附近设备</value></data>
+  <data name="nav_history" xml:space="preserve"><value>传输记录</value></data>
+  <data name="nav_settings" xml:space="preserve"><value>设置</value></data>
+  <data name="section_local_device" xml:space="preserve"><value>本机信息</value></data>
+  <data name="section_nearby_devices" xml:space="preserve"><value>局域网设备</value></data>
+  <data name="section_trusted_devices" xml:space="preserve"><value>已信任设备</value></data>
+  <data name="section_appearance" xml:space="preserve"><value>外观主题</value></data>
+  <data name="section_transfer_prefs" xml:space="preserve"><value>传输与剪贴板</value></data>
+  <data name="section_network_firewall" xml:space="preserve"><value>网络与防火墙</value></data>
+  <data name="theme_system" xml:space="preserve"><value>跟随系统</value></data>
+  <data name="theme_light" xml:space="preserve"><value>浅色</value></data>
+  <data name="theme_dark" xml:space="preserve"><value>深色</value></data>
+  <data name="label_ip_address" xml:space="preserve"><value>IP 地址</value></data>
+  <data name="label_port" xml:space="preserve"><value>端口</value></data>
+  <data name="label_port_optional" xml:space="preserve"><value>端口（留空默认 42580）</value></data>
+  <data name="label_device_name" xml:space="preserve"><value>设备显示名称</value></data>
+  <data name="label_receive_dir" xml:space="preserve"><value>接收目录</value></data>
+  <data name="label_default_receive_dir" xml:space="preserve"><value>默认（下载/LanTransfer）</value></data>
+  <data name="label_auto_copy" xml:space="preserve"><value>自动复制收到的文字</value></data>
+  <data name="label_auto_copy_desc" xml:space="preserve"><value>收到新文字消息时自动写入系统剪贴板</value></data>
+  <data name="label_auto_accept" xml:space="preserve"><value>自动接收文件</value></data>
+  <data name="label_trusted_badge" xml:space="preserve"><value>已信任</value></data>
+  <data name="label_connected_badge" xml:space="preserve"><value>已连接</value></data>
+  <data name="label_untrusted_badge" xml:space="preserve"><value>未配对</value></data>
+  <data name="label_encrypted_hint" xml:space="preserve"><value>端到端加密 · 仅限本地网络</value></data>
+  <data name="label_direction_send" xml:space="preserve"><value>发送</value></data>
+  <data name="label_direction_receive" xml:space="preserve"><value>接收</value></data>
+  <data name="label_file_count" xml:space="preserve"><value>共 {0} 个文件</value></data>
+  <data name="label_total_size" xml:space="preserve"><value>总大小 {0}</value></data>
+  <data name="label_pending_files" xml:space="preserve"><value>待发送列表（{0}）</value></data>
+  <data name="label_speed" xml:space="preserve"><value>速率 {0}</value></data>
+  <data name="label_eta" xml:space="preserve"><value>剩余 {0}</value></data>
+  <data name="label_eta_unknown" xml:space="preserve"><value>未知</value></data>
+  <data name="label_listen_port" xml:space="preserve"><value>监听端口 {0}</value></data>
+  <data name="label_not_listening" xml:space="preserve"><value>未监听</value></data>
+  <data name="label_search_history" xml:space="preserve"><value>搜索文件名、设备名或文字内容</value></data>
+  <data name="label_filter_all" xml:space="preserve"><value>全部</value></data>
+  <data name="label_filter_text" xml:space="preserve"><value>文字</value></data>
+  <data name="label_filter_file" xml:space="preserve"><value>文件</value></data>
+  <data name="label_message_placeholder" xml:space="preserve"><value>输入要发送的文字，完整保留换行与特殊字符…</value></data>
+  <data name="label_drop_hint" xml:space="preserve"><value>松开鼠标即可添加至待发送列表</value></data>
+  <data name="label_welcome_title" xml:space="preserve"><value>开始局域网极速互传</value></data>
+  <data name="label_welcome_desc" xml:space="preserve"><value>在左侧选择同一局域网内的设备即可发送文字或文件，所有数据仅在本地传输，不消耗流量。</value></data>
+  <data name="label_scanning_devices" xml:space="preserve"><value>正在扫描同一局域网内的设备…</value></data>
+  <data name="label_no_trusted_devices" xml:space="preserve"><value>暂无已信任设备，可通过点选设备、扫码或手动输入地址配对。</value></data>
+  <data name="label_no_history" xml:space="preserve"><value>暂无传输记录</value></data>
+  <data name="label_no_messages" xml:space="preserve"><value>暂无消息，发送一段文字或选择文件开始传输吧</value></data>
+  <data name="label_pair_code_hint" xml:space="preserve"><value>请核对双方屏幕上显示的 6 位验证码是否一致</value></data>
+  <data name="label_qr_hint" xml:space="preserve"><value>使用手机端“扫描二维码”扫描下方二维码即可完成配对</value></data>
+  <data name="label_qr_auto_refresh" xml:space="preserve"><value>令牌每 5 分钟自动刷新，本机地址变化时自动更新</value></data>
+  <data name="label_incoming_offer_from" xml:space="preserve"><value>来自“{0}”的文件传输请求</value></data>
+  <data name="label_pair_request_from" xml:space="preserve"><value>“{0}”请求与本机配对</value></data>
+  <data name="label_version_detail" xml:space="preserve"><value>本机版本：{0}　对方版本：{1}</value></data>
+  <data name="label_drag_drop_tip" xml:space="preserve"><value>支持将文件拖放到此区域</value></data>
+  <data name="btn_connect" xml:space="preserve"><value>连接</value></data>
+  <data name="btn_connecting" xml:space="preserve"><value>正在连接</value></data>
+  <data name="btn_cancel" xml:space="preserve"><value>取消</value></data>
+  <data name="btn_accept" xml:space="preserve"><value>接受</value></data>
+  <data name="btn_reject" xml:space="preserve"><value>拒绝</value></data>
+  <data name="btn_receive" xml:space="preserve"><value>接收</value></data>
+  <data name="btn_send" xml:space="preserve"><value>发送</value></data>
+  <data name="btn_send_files" xml:space="preserve"><value>发送文件</value></data>
+  <data name="btn_send_pending" xml:space="preserve"><value>发送全部文件</value></data>
+  <data name="btn_clear_pending" xml:space="preserve"><value>清空列表</value></data>
+  <data name="btn_paste" xml:space="preserve"><value>粘贴</value></data>
+  <data name="btn_send_clipboard" xml:space="preserve"><value>发送剪贴板</value></data>
+  <data name="btn_copy" xml:space="preserve"><value>复制</value></data>
+  <data name="btn_copy_path" xml:space="preserve"><value>复制路径</value></data>
+  <data name="btn_copy_address" xml:space="preserve"><value>复制地址</value></data>
+  <data name="btn_retry" xml:space="preserve"><value>重试</value></data>
+  <data name="btn_resume" xml:space="preserve"><value>继续</value></data>
+  <data name="btn_expand" xml:space="preserve"><value>展开</value></data>
+  <data name="btn_collapse" xml:space="preserve"><value>收起</value></data>
+  <data name="btn_send_as_txt" xml:space="preserve"><value>以 .txt 文件发送</value></data>
+  <data name="btn_replace_and_send" xml:space="preserve"><value>替换并发送</value></data>
+  <data name="btn_show_qr" xml:space="preserve"><value>显示本机二维码</value></data>
+  <data name="btn_qr_pair" xml:space="preserve"><value>二维码配对</value></data>
+  <data name="btn_manual_connect" xml:space="preserve"><value>手动连接</value></data>
+  <data name="btn_unpair" xml:space="preserve"><value>解除配对</value></data>
+  <data name="btn_repair_pair" xml:space="preserve"><value>重新配对</value></data>
+  <data name="btn_open_file" xml:space="preserve"><value>打开文件</value></data>
+  <data name="btn_reveal_in_folder" xml:space="preserve"><value>打开所在位置</value></data>
+  <data name="btn_open_receive_dir" xml:space="preserve"><value>打开接收目录</value></data>
+  <data name="btn_change_dir" xml:space="preserve"><value>更改目录</value></data>
+  <data name="btn_save" xml:space="preserve"><value>保存</value></data>
+  <data name="btn_delete" xml:space="preserve"><value>删除</value></data>
+  <data name="btn_delete_record_only" xml:space="preserve"><value>仅删除记录</value></data>
+  <data name="btn_delete_with_file" xml:space="preserve"><value>同时删除本地文件</value></data>
+  <data name="btn_clear_history" xml:space="preserve"><value>清空记录</value></data>
+  <data name="btn_clear" xml:space="preserve"><value>清空</value></data>
+  <data name="btn_repair_firewall" xml:space="preserve"><value>修复防火墙规则</value></data>
+  <data name="btn_open_notification_settings" xml:space="preserve"><value>去开启</value></data>
+  <data name="btn_receive_dir_settings" xml:space="preserve"><value>去设置</value></data>
+  <data name="btn_open_main_window" xml:space="preserve"><value>打开主窗口</value></data>
+  <data name="btn_exit" xml:space="preserve"><value>退出</value></data>
+  <data name="btn_confirm" xml:space="preserve"><value>确定</value></data>
+  <data name="btn_close" xml:space="preserve"><value>关闭</value></data>
+  <data name="btn_refresh_qr" xml:space="preserve"><value>刷新二维码</value></data>
+  <data name="banner_no_network" xml:space="preserve"><value>请连接 Wi‑Fi 或开启热点</value></data>
+  <data name="banner_identity_reset" xml:space="preserve"><value>本机身份已重置，需要与之前配对的设备重新配对。</value></data>
+  <data name="banner_identity_save_failed" xml:space="preserve"><value>无法保存本机身份，暂时不能收发内容。请检查存储空间后重试。</value></data>
+  <data name="banner_listen_failed" xml:space="preserve"><value>传输服务启动失败，其他设备暂时无法连接本机。请重新打开应用。</value></data>
+  <data name="banner_discovery_unavailable" xml:space="preserve"><value>自动发现不可用，可以手动输入地址或扫码配对。</value></data>
+  <data name="banner_history_store_failed" xml:space="preserve"><value>传输记录读取或保存失败，收发不受影响。</value></data>
+  <data name="banner_notifications_off" xml:space="preserve"><value>通知未开启，后台收到的内容不会弹出通知。</value></data>
+  <data name="banner_firewall" xml:space="preserve"><value>防火墙可能阻止了本应用，其他设备可能无法连接本机。</value></data>
+  <data name="status_text_sending" xml:space="preserve"><value>发送中</value></data>
+  <data name="status_text_delivered" xml:space="preserve"><value>已送达</value></data>
+  <data name="status_text_failed" xml:space="preserve"><value>发送失败</value></data>
+  <data name="status_text_received" xml:space="preserve"><value>已接收</value></data>
+  <data name="status_task_offering" xml:space="preserve"><value>等待对方确认</value></data>
+  <data name="status_task_awaiting_user" xml:space="preserve"><value>等待确认</value></data>
+  <data name="status_task_running" xml:space="preserve"><value>传输中</value></data>
+  <data name="status_task_interrupted" xml:space="preserve"><value>已中断</value></data>
+  <data name="status_task_resuming" xml:space="preserve"><value>正在继续</value></data>
+  <data name="status_task_verifying_prefix" xml:space="preserve"><value>正在校验已传输部分</value></data>
+  <data name="status_task_completed" xml:space="preserve"><value>已完成</value></data>
+  <data name="status_task_rejected_sender" xml:space="preserve"><value>对方拒绝接收</value></data>
+  <data name="status_task_rejected_receiver" xml:space="preserve"><value>已拒绝</value></data>
+  <data name="status_task_no_response_sender" xml:space="preserve"><value>对方未响应</value></data>
+  <data name="status_task_timeout_receiver" xml:space="preserve"><value>已超时</value></data>
+  <data name="status_task_no_space" xml:space="preserve"><value>接收方存储空间不足</value></data>
+  <data name="status_task_cannot_save_sender" xml:space="preserve"><value>接收方无法保存文件</value></data>
+  <data name="status_task_cannot_save_receiver" xml:space="preserve"><value>接收目录不可用</value></data>
+  <data name="status_task_connection_lost" xml:space="preserve"><value>连接已断开</value></data>
+  <data name="status_task_cancelled" xml:space="preserve"><value>已取消</value></data>
+  <data name="status_task_peer_cancelled" xml:space="preserve"><value>对方已取消</value></data>
+  <data name="status_task_peer_cancelled_offer" xml:space="preserve"><value>对方已取消发送</value></data>
+  <data name="status_task_offer_invalid" xml:space="preserve"><value>对方无法处理该请求</value></data>
+  <data name="status_interrupt_peer_unresponsive" xml:space="preserve"><value>对方无响应</value></data>
+  <data name="status_interrupt_peer_closed" xml:space="preserve"><value>连接被对方关闭</value></data>
+  <data name="status_interrupt_local_network_lost" xml:space="preserve"><value>本机网络已断开</value></data>
+  <data name="status_interrupt_integrity_failed" xml:space="preserve"><value>数据完整性校验失败</value></data>
+  <data name="status_interrupt_protocol_error" xml:space="preserve"><value>协议数据错误</value></data>
+  <data name="status_interrupt_write_failed" xml:space="preserve"><value>写入失败：{0}</value></data>
+  <data name="status_interrupt_app_exit" xml:space="preserve"><value>应用已退出</value></data>
+  <data name="status_interrupt_app_killed" xml:space="preserve"><value>应用上次未正常结束</value></data>
+  <data name="status_file_waiting" xml:space="preserve"><value>等待中</value></data>
+  <data name="status_file_transferring" xml:space="preserve"><value>传输中</value></data>
+  <data name="status_file_verifying" xml:space="preserve"><value>正在校验</value></data>
+  <data name="status_file_write_failed" xml:space="preserve"><value>写入失败</value></data>
+  <data name="status_file_completed" xml:space="preserve"><value>已完成</value></data>
+  <data name="status_file_read_failed" xml:space="preserve"><value>读取失败</value></data>
+  <data name="status_file_checksum_failed" xml:space="preserve"><value>校验失败</value></data>
+  <data name="status_pair_waiting" xml:space="preserve"><value>等待对方确认</value></data>
+  <data name="status_pair_completing" xml:space="preserve"><value>正在完成配对…</value></data>
+  <data name="error_not_local" xml:space="preserve"><value>目标地址不在本地网络内</value></data>
+  <data name="error_connect_failed" xml:space="preserve"><value>无法连接，请确认双方在同一网络且防火墙已放行</value></data>
+  <data name="error_connect_send_file" xml:space="preserve"><value>无法连接到对方设备</value></data>
+  <data name="error_connect_resume" xml:space="preserve"><value>无法连接到对方设备，任务已保持中断状态。</value></data>
+  <data name="error_connect_self" xml:space="preserve"><value>不能连接本机。</value></data>
+  <data name="error_bind_failed" xml:space="preserve"><value>无法通过本地网络建立连接。</value></data>
+  <data name="error_bind_failed_vpn" xml:space="preserve"><value>无法通过本地网络建立连接，请检查 VPN 是否允许应用绕过。</value></data>
+  <data name="error_ip_invalid" xml:space="preserve"><value>IP 地址格式无效</value></data>
+  <data name="error_port_invalid" xml:space="preserve"><value>端口须为 1–65535 之间的整数</value></data>
+  <data name="error_no_version_response" xml:space="preserve"><value>对方未响应版本协商，请确认对方已打开本应用。</value></data>
+  <data name="error_version_incompatible" xml:space="preserve"><value>对方版本不兼容，请将两端升级到最新版本</value></data>
+  <data name="error_name_invalid" xml:space="preserve"><value>名称须为 1–32 个字符，且不能包含控制字符。</value></data>
+  <data name="error_dir_not_writable" xml:space="preserve"><value>所选目录无法写入，请选择其他目录。</value></data>
+  <data name="error_file_size_unknown" xml:space="preserve"><value>无法获取该文件的大小，暂不支持发送。</value></data>
+  <data name="error_too_many_files" xml:space="preserve"><value>单次最多发送 1000 个文件。</value></data>
+  <data name="error_folders_not_supported" xml:space="preserve"><value>暂不支持发送文件夹</value></data>
+  <data name="error_no_network_qr" xml:space="preserve"><value>请先连接 Wi‑Fi 或热点</value></data>
+  <data name="error_qr_token_invalid" xml:space="preserve"><value>二维码已失效，请刷新后重试</value></data>
+  <data name="error_no_file_handler" xml:space="preserve"><value>没有可打开此文件的应用</value></data>
+  <data name="error_file_not_found" xml:space="preserve"><value>文件已被移动或删除</value></data>
+  <data name="error_receive_dir_inaccessible" xml:space="preserve"><value>接收目录不存在或无法访问</value></data>
+  <data name="error_peer_unpaired" xml:space="preserve"><value>对方已解除配对</value></data>
+  <data name="security_title" xml:space="preserve"><value>安全警告</value></data>
+  <data name="security_key_mismatch" xml:space="preserve"><value>“{0}”的身份与配对时不一致，可能被冒充，已拒绝连接。</value></data>
+  <data name="security_auth_failed" xml:space="preserve"><value>对方未能证明自己的身份，已断开连接。</value></data>
+  <data name="security_qr_mismatch" xml:space="preserve"><value>对方身份与二维码不符，已停止配对。请确认扫描的是对方屏幕上的二维码。</value></data>
+  <data name="toast_copied" xml:space="preserve"><value>已复制</value></data>
+  <data name="toast_copied_with_nul" xml:space="preserve"><value>已复制。文字含空字符（NUL），粘贴到其他应用时可能在该处被截断。</value></data>
+  <data name="toast_clipboard_empty" xml:space="preserve"><value>剪贴板中没有文本</value></data>
+  <data name="toast_clipboard_failed" xml:space="preserve"><value>无法访问剪贴板，请稍后重试。</value></data>
+  <data name="toast_name_chars_removed" xml:space="preserve"><value>已移除无法识别的字符</value></data>
+  <data name="toast_name_saved" xml:space="preserve"><value>设备名称已保存</value></data>
+  <data name="toast_pair_success" xml:space="preserve"><value>配对成功</value></data>
+  <data name="toast_pair_success_peer" xml:space="preserve"><value>已与“{0}”配对成功</value></data>
+  <data name="toast_pair_rejected" xml:space="preserve"><value>对方拒绝了配对请求</value></data>
+  <data name="toast_pair_timeout" xml:space="preserve"><value>配对请求已超时</value></data>
+  <data name="toast_pair_busy" xml:space="preserve"><value>对方正忙</value></data>
+  <data name="toast_pair_failed" xml:space="preserve"><value>配对失败，请重试</value></data>
+  <data name="toast_delete_local_failed" xml:space="preserve"><value>本地文件删除失败，记录已保留。</value></data>
+  <data name="toast_pending_cancel_failed" xml:space="preserve"><value>取消通知可能无法送达对方。</value></data>
+  <data name="dialog_text_too_long" xml:space="preserve"><value>文字超过长度上限（1 MB），无法直接发送。可以改为以 .txt 文件发送。</value></data>
+  <data name="dialog_unpaired_surrogate" xml:space="preserve"><value>文本包含无法编码的字符</value></data>
+  <data name="dialog_unpaired_surrogate_desc" xml:space="preserve"><value>可以选择将无法编码的字符替换为占位符（）后继续发送，或取消发送。</value></data>
+  <data name="dialog_unpair_title" xml:space="preserve"><value>确认解除配对</value></data>
+  <data name="dialog_unpair_desc" xml:space="preserve"><value>解除与“{0}”的配对后，将删除其信任信息与自动接收设置，并停止进行中的传输。</value></data>
+  <data name="dialog_delete_file_title" xml:space="preserve"><value>删除文件记录</value></data>
+  <data name="dialog_delete_file_desc" xml:space="preserve"><value>是否同时删除本机保存的文件？</value></data>
+  <data name="dialog_delete_interrupted" xml:space="preserve"><value>删除此记录将取消整个传输任务，任务中未完成的文件不再继续传输。</value></data>
+  <data name="dialog_clear_history_title" xml:space="preserve"><value>确认清空记录</value></data>
+  <data name="dialog_clear_history" xml:space="preserve"><value>将删除本机全部传输记录，已接收的文件不受影响。</value></data>
+  <data name="dialog_clear_history_unfinished" xml:space="preserve"><value>另有 {0} 个未完成的传输任务将被一并取消。</value></data>
+  <data name="dialog_exit_transfer_title" xml:space="preserve"><value>仍有传输进行中，确认退出？</value></data>
+  <data name="dialog_exit_transfer_desc" xml:space="preserve"><value>退出后，进行中的任务将标记为“已中断”并保留临时文件，下次打开后可点击继续。</value></data>
+  <data name="notify_text_title" xml:space="preserve"><value>来自“{0}”的新文字</value></data>
+  <data name="notify_file_done_title" xml:space="preserve"><value>已接收来自“{0}”的文件</value></data>
+  <data name="notify_pair_req_title" xml:space="preserve"><value>收到配对请求</value></data>
+  <data name="notify_pair_req_body" xml:space="preserve"><value>“{0}”请求与本机配对，点击查看</value></data>
+  <data name="notify_file_req_title" xml:space="preserve"><value>收到文件传输请求</value></data>
+  <data name="notify_file_req_body" xml:space="preserve"><value>“{0}”想发送 {1} 个文件，点击确认</value></data>
+  <data name="notify_problem_title" xml:space="preserve"><value>传输异常（{0}）</value></data>
+</root>

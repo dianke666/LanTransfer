@@ -1,0 +1,439 @@
+{
+  "description": "文件名处理（S0–S2、L1–L4）：android / windows 两套期望；input_utf16 为 UTF-16 码元（大端十六进制）",
+  "protocol_version": "1.0",
+  "vectors": [
+    {
+      "name": "合法名称原样保留",
+      "input": "report.pdf",
+      "now": "2025-01-01T09:30:05",
+      "android": "report.pdf",
+      "windows": "report.pdf",
+      "steps": {
+        "android": [],
+        "windows": []
+      }
+    },
+    {
+      "name": "保留名 con.txt",
+      "input": "con.txt",
+      "now": "2025-01-01T09:30:05",
+      "android": "con.txt",
+      "windows": "_con.txt",
+      "steps": {
+        "android": [],
+        "windows": [
+          "L3"
+        ]
+      }
+    },
+    {
+      "name": "保留名 Nul.tar.gz",
+      "input": "Nul.tar.gz",
+      "now": "2025-01-01T09:30:05",
+      "android": "Nul.tar.gz",
+      "windows": "_Nul.tar.gz",
+      "steps": {
+        "android": [],
+        "windows": [
+          "L3"
+        ]
+      }
+    },
+    {
+      "name": "保留名 COM1",
+      "input": "COM1",
+      "now": "2025-01-01T09:30:05",
+      "android": "COM1",
+      "windows": "_COM1",
+      "steps": {
+        "android": [],
+        "windows": [
+          "L3"
+        ]
+      }
+    },
+    {
+      "name": "保留名后跟空格 CON .txt",
+      "input": "CON .txt",
+      "now": "2025-01-01T09:30:05",
+      "android": "CON .txt",
+      "windows": "_CON .txt",
+      "steps": {
+        "android": [],
+        "windows": [
+          "L3"
+        ]
+      }
+    },
+    {
+      "name": "保留名 aux .log",
+      "input": "aux .log",
+      "now": "2025-01-01T09:30:05",
+      "android": "aux .log",
+      "windows": "_aux .log",
+      "steps": {
+        "android": [],
+        "windows": [
+          "L3"
+        ]
+      }
+    },
+    {
+      "name": "保留名 con.",
+      "input": "con.",
+      "now": "2025-01-01T09:30:05",
+      "android": "con.",
+      "windows": "_con",
+      "steps": {
+        "android": [],
+        "windows": [
+          "L1",
+          "L3"
+        ]
+      }
+    },
+    {
+      "name": "非保留名 Com0.txt",
+      "input": "Com0.txt",
+      "now": "2025-01-01T09:30:05",
+      "android": "Com0.txt",
+      "windows": "Com0.txt",
+      "steps": {
+        "android": [],
+        "windows": []
+      }
+    },
+    {
+      "name": "保留名 lpt9.log",
+      "input": "lpt9.log",
+      "now": "2025-01-01T09:30:05",
+      "android": "lpt9.log",
+      "windows": "_lpt9.log",
+      "steps": {
+        "android": [],
+        "windows": [
+          "L3"
+        ]
+      }
+    },
+    {
+      "name": "点点 ..",
+      "input": "..",
+      "now": "2025-01-01T09:30:05",
+      "android": "file_20250101_093005",
+      "windows": "file_20250101_093005",
+      "steps": {
+        "android": [
+          "S1",
+          "L2"
+        ],
+        "windows": [
+          "S1",
+          "L2"
+        ]
+      }
+    },
+    {
+      "name": "路径 a/../b",
+      "input": "a/../b",
+      "now": "2025-01-01T09:30:05",
+      "android": "b",
+      "windows": "b",
+      "steps": {
+        "android": [
+          "S1"
+        ],
+        "windows": [
+          "S1"
+        ]
+      }
+    },
+    {
+      "name": "Windows 路径",
+      "input": "C:\\Users\\a\\b.txt",
+      "now": "2025-01-01T09:30:05",
+      "android": "b.txt",
+      "windows": "b.txt",
+      "steps": {
+        "android": [
+          "S1"
+        ],
+        "windows": [
+          "S1"
+        ]
+      }
+    },
+    {
+      "name": "以分隔符结尾 dir/",
+      "input": "dir/",
+      "now": "2025-01-01T09:30:05",
+      "android": "file_20250101_093005",
+      "windows": "file_20250101_093005",
+      "steps": {
+        "android": [
+          "S1",
+          "L2"
+        ],
+        "windows": [
+          "S1",
+          "L2"
+        ]
+      }
+    },
+    {
+      "name": "末尾的点 report.",
+      "input": "report.",
+      "now": "2025-01-01T09:30:05",
+      "android": "report.",
+      "windows": "report",
+      "steps": {
+        "android": [],
+        "windows": [
+          "L1"
+        ]
+      }
+    },
+    {
+      "name": "末尾的空格和点",
+      "input": "trailing. . ",
+      "now": "2025-01-01T09:30:05",
+      "android": "trailing. . ",
+      "windows": "trailing",
+      "steps": {
+        "android": [],
+        "windows": [
+          "L1"
+        ]
+      }
+    },
+    {
+      "name": "只有空格",
+      "input": "  ",
+      "now": "2025-01-01T09:30:05",
+      "android": "  ",
+      "windows": "file_20250101_093005",
+      "steps": {
+        "android": [],
+        "windows": [
+          "L1",
+          "L2"
+        ]
+      }
+    },
+    {
+      "name": "三个点",
+      "input": "...",
+      "now": "2025-01-01T09:30:05",
+      "android": "...",
+      "windows": "file_20250101_093005",
+      "steps": {
+        "android": [],
+        "windows": [
+          "L1",
+          "L2"
+        ]
+      }
+    },
+    {
+      "name": "非法字符",
+      "input": "a<b>c:d\"e|f?g*h.txt",
+      "now": "2025-01-01T09:30:05",
+      "android": "a_b_c_d_e_f_g_h.txt",
+      "windows": "a_b_c_d_e_f_g_h.txt",
+      "steps": {
+        "android": [
+          "S2"
+        ],
+        "windows": [
+          "S2"
+        ]
+      }
+    },
+    {
+      "name": "控制字符与 DEL",
+      "input": "tab\there\u0001x.txt",
+      "now": "2025-01-01T09:30:05",
+      "android": "tab_here_x_.txt",
+      "windows": "tab_here_x_.txt",
+      "steps": {
+        "android": [
+          "S2"
+        ],
+        "windows": [
+          "S2"
+        ]
+      }
+    },
+    {
+      "name": "255 字节的中文名称",
+      "input": "中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中",
+      "now": "2025-01-01T09:30:05",
+      "android": "中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中",
+      "windows": "中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中",
+      "steps": {
+        "android": [],
+        "windows": []
+      }
+    },
+    {
+      "name": "超过 255 字节的中文名称",
+      "input": "中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中.txt",
+      "now": "2025-01-01T09:30:05",
+      "android": "中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中.txt",
+      "windows": "中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中.txt",
+      "steps": {
+        "android": [
+          "L4"
+        ],
+        "windows": []
+      }
+    },
+    {
+      "name": "超过 255 个 UTF-16 码元",
+      "input": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.txt",
+      "now": "2025-01-01T09:30:05",
+      "android": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.txt",
+      "windows": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.txt",
+      "steps": {
+        "android": [
+          "L4"
+        ],
+        "windows": [
+          "L4"
+        ]
+      }
+    },
+    {
+      "name": "表情组成的长名称",
+      "input": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀.png",
+      "now": "2025-01-01T09:30:05",
+      "android": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀.png",
+      "windows": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀.png",
+      "steps": {
+        "android": [
+          "L4"
+        ],
+        "windows": []
+      }
+    },
+    {
+      "name": "超长扩展名",
+      "input": "a.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "now": "2025-01-01T09:30:05",
+      "android": "a.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "windows": "a.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "steps": {
+        "android": [
+          "L4"
+        ],
+        "windows": [
+          "L4"
+        ]
+      }
+    },
+    {
+      "name": "回退名形式的输入保持不变",
+      "input": "file_20250101_093005.txt",
+      "now": "2025-01-01T09:30:05",
+      "android": "file_20250101_093005.txt",
+      "windows": "file_20250101_093005.txt",
+      "steps": {
+        "android": [],
+        "windows": []
+      }
+    },
+    {
+      "name": "以点开头无扩展名",
+      "input": ".bashrc",
+      "now": "2025-01-01T09:30:05",
+      "android": ".bashrc",
+      "windows": ".bashrc",
+      "steps": {
+        "android": [],
+        "windows": []
+      }
+    },
+    {
+      "name": "多重扩展名",
+      "input": "name.with.many.dots.tar.gz",
+      "now": "2025-01-01T09:30:05",
+      "android": "name.with.many.dots.tar.gz",
+      "windows": "name.with.many.dots.tar.gz",
+      "steps": {
+        "android": [],
+        "windows": []
+      }
+    },
+    {
+      "name": "中文扩展名",
+      "input": "名字.中文扩展名",
+      "now": "2025-01-01T09:30:05",
+      "android": "名字.中文扩展名",
+      "windows": "名字.中文扩展名",
+      "steps": {
+        "android": [],
+        "windows": []
+      }
+    },
+    {
+      "name": "空串",
+      "input": "",
+      "now": "2025-01-01T09:30:05",
+      "android": "file_20250101_093005",
+      "windows": "file_20250101_093005",
+      "steps": {
+        "android": [
+          "L2"
+        ],
+        "windows": [
+          "L2"
+        ]
+      }
+    },
+    {
+      "name": "单独的高代理",
+      "input_utf16": "0061d8000062002e007400780074",
+      "now": "2025-01-01T09:30:05",
+      "android": "a_b.txt",
+      "windows": "a_b.txt",
+      "steps": {
+        "android": [
+          "S0"
+        ],
+        "windows": [
+          "S0"
+        ]
+      }
+    },
+    {
+      "name": "单独的低代理",
+      "input_utf16": "dc00",
+      "now": "2025-01-01T09:30:05",
+      "android": "_",
+      "windows": "_",
+      "steps": {
+        "android": [
+          "S0"
+        ],
+        "windows": [
+          "S0"
+        ]
+      }
+    },
+    {
+      "name": "次序颠倒的代理对",
+      "input_utf16": "de00d83d002e007400780074",
+      "now": "2025-01-01T09:30:05",
+      "android": "__.txt",
+      "windows": "__.txt",
+      "steps": {
+        "android": [
+          "S0"
+        ],
+        "windows": [
+          "S0"
+        ]
+      }
+    }
+  ]
+}

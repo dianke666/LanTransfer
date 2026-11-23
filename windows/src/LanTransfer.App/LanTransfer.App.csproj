@@ -1,0 +1,53 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- WPF 应用：主窗口、托盘（WinForms NotifyIcon）、单实例 -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <!-- 最低支持 Windows 10 1809（需求 1.2） -->
+    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <!-- 可执行文件名 LanTransfer.exe（防火墙规则 C7.3 按此路径匹配） -->
+    <AssemblyName>LanTransfer</AssemblyName>
+    <RootNamespace>LanTransfer.App</RootNamespace>
+    <NeutralLanguage>zh-Hans</NeutralLanguage>
+    <SatelliteResourceLanguages>zh-Hans</SatelliteResourceLanguages>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <!-- 本项目为 WPF 桌面应用，不面向 WinRT AOT（UWP/WinUI 3） -->
+    <NoWarn>$(NoWarn);MVVMTK0045</NoWarn>
+  </PropertyGroup>
+
+  <!-- 发布方式：win-x64 自包含 + ReadyToRun，用户机器无需预装 .NET -->
+  <PropertyGroup>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishReadyToRun>true</PublishReadyToRun>
+  </PropertyGroup>
+
+  <!-- Windows App SDK：非打包应用，运行时随应用自包含部署（只使用 AppNotifications） -->
+  <PropertyGroup>
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- 同时启用 WPF 与 WinForms 时，避免 Application、MessageBox 等类型名与 WPF 冲突 -->
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="QRCoder" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LanTransfer.Platform.Windows\LanTransfer.Platform.Windows.csproj" />
+    <ProjectReference Include="..\LanTransfer.Engine\LanTransfer.Engine.csproj" />
+  </ItemGroup>
+</Project>

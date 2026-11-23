@@ -1,0 +1,110 @@
+# 版本目录：全部依赖与插件版本只在此处声明，精确锁定，不使用版本范围（设计：技术栈 → Android_App）。
+# 实际解析结果（含传递依赖）记录在各模块的 gradle.lockfile 中。
+#
+# 版本选择说明：
+# - 各基线版本线（Kotlin 2.2.x、AGP 8.x、coroutines 1.10.x、Room 2.7.x、DataStore 1.1.x、BouncyCastle 1.8x、
+#   ZXing 3.5.x、CameraX 1.4.x、Kotest 6.x、JUnit 5.x、Robolectric 4.x）取该版本线上最新的补丁版本。
+# - compileSdk 固定为 36、AGP 固定在 8.x：Compose BOM 2026.08.00 及以后、androidx.core 1.19 及以后
+#   要求 compileSdk 37 与 AGP 9.1，因此 Compose BOM 停在 2026.06.01，core-ktx 停在 1.18.0。
+#   同样原因（AAR 元数据检查：lifecycle 2.11.x、navigation 2.10.x 要求 compileSdk 37 与 AGP 9.1），
+#   lifecycle 停在 2.10.0，navigation 停在 2.9.8（2.9.x 的最新补丁版本）。
+
+[versions]
+agp = "8.13.2"
+kotlin = "2.2.21"
+ksp = "2.2.21-2.0.5"
+animalsniffer = "2.0.1"
+
+coroutines = "1.10.2"
+bouncycastle = "1.86"
+zxing = "3.5.4"
+
+compose-bom = "2026.06.01"
+androidx-core = "1.18.0"
+androidx-activity = "1.13.0"
+androidx-lifecycle = "2.10.0"
+androidx-navigation = "2.9.8"
+room = "2.7.2"
+datastore = "1.1.7"
+camerax = "1.4.2"
+
+# 测试向量加载器（JSON 树 API）与 peer-cli 的 JSON Lines；1.9.x 是与 Kotlin 2.2 配套的版本线
+kotlinx-serialization = "1.9.0"
+
+junit5 = "5.14.4"
+junit4 = "4.13.2"
+kotest = "6.2.5"
+robolectric = "4.17"
+turbine = "1.2.1"
+mockk = "1.14.11"
+androidx-test-core = "1.7.0"
+androidx-test-runner = "1.7.0"
+androidx-test-ext-junit = "1.3.0"
+espresso = "3.7.0"
+
+# Android API 26（8.0.0_r2）的 animal-sniffer 签名：core 模块只能使用 API 26 上可用的 Java API
+android-api26-signature = "8.0.0_r2"
+
+[libraries]
+# 协议层
+bouncycastle-bcprov = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncycastle" }
+
+# 并发
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
+
+# Android 应用
+androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-core" }
+androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
+androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
+androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
+androidx-lifecycle-process = { module = "androidx.lifecycle:lifecycle-process", version.ref = "androidx-lifecycle" }
+androidx-lifecycle-service = { module = "androidx.lifecycle:lifecycle-service", version.ref = "androidx-lifecycle" }
+androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "androidx-navigation" }
+compose-bom = { module = "androidx.compose:compose-bom", version.ref = "compose-bom" }
+compose-ui = { module = "androidx.compose.ui:ui" }
+compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
+compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
+compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4" }
+compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
+compose-material3 = { module = "androidx.compose.material3:material3" }
+room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
+room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
+room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
+room-testing = { module = "androidx.room:room-testing", version.ref = "room" }
+datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
+camerax-core = { module = "androidx.camera:camera-core", version.ref = "camerax" }
+camerax-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "camerax" }
+camerax-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "camerax" }
+camerax-view = { module = "androidx.camera:camera-view", version.ref = "camerax" }
+zxing-core = { module = "com.google.zxing:core", version.ref = "zxing" }
+
+# 测试
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junit5" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+junit4 = { module = "junit:junit", version.ref = "junit4" }
+kotest-runner-junit5 = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
+kotest-assertions-core = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
+kotest-property = { module = "io.kotest:kotest-property", version.ref = "kotest" }
+robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
+turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+mockk-android = { module = "io.mockk:mockk-android", version.ref = "mockk" }
+androidx-test-core = { module = "androidx.test:core", version.ref = "androidx-test-core" }
+androidx-test-runner = { module = "androidx.test:runner", version.ref = "androidx-test-runner" }
+androidx-test-ext-junit = { module = "androidx.test.ext:junit", version.ref = "androidx-test-ext-junit" }
+androidx-test-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "espresso" }
+
+android-api26-signature = { module = "net.sf.androidscents.signature:android-api-level-26", version.ref = "android-api26-signature" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+room = { id = "androidx.room", version.ref = "room" }
+animalsniffer = { id = "ru.vyarus.animalsniffer", version.ref = "animalsniffer" }

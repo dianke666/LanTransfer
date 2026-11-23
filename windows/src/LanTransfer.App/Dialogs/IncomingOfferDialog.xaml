@@ -1,0 +1,59 @@
+<Window x:Class="LanTransfer.App.Dialogs.IncomingOfferDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:LanTransfer.App"
+        Title="{x:Static local:UiText.NotifyFileReqTitle}"
+        Width="450"
+        MaxHeight="520"
+        SizeToContent="Height"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False"
+        Background="{DynamicResource SurfaceBrush}"
+        Foreground="{DynamicResource TextPrimaryBrush}"
+        FontFamily="{StaticResource AppFont}">
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Margin="0,0,0,12">
+            <TextBlock x:Name="TitleText" FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap" />
+            <TextBlock x:Name="SummaryText" FontSize="12.5" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,4,0,0" />
+        </StackPanel>
+
+        <Border Grid.Row="2" Background="{DynamicResource SurfaceSubtleBrush}"
+                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                CornerRadius="12" MaxHeight="260" Margin="0,0,0,18">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="8">
+                <ItemsControl x:Name="FileList">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="6,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{Binding Name}" FontSize="13" TextTrimming="CharacterEllipsis"
+                                           ToolTip="{Binding Name}" Margin="0,0,12,0" />
+                                <TextBlock Grid.Column="1" Text="{Binding SizeText}" FontSize="12"
+                                           FontFamily="{StaticResource MonoFont}"
+                                           Foreground="{DynamicResource TextMutedBrush}" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Border>
+
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Content="{x:Static local:UiText.BtnReject}" Style="{StaticResource SecondaryButtonStyle}"
+                    Margin="0,0,8,0" Click="OnRejectClick" />
+            <Button Content="{x:Static local:UiText.BtnReceive}" Style="{StaticResource PrimaryButtonStyle}"
+                    IsDefault="True" Click="OnAcceptClick" />
+        </StackPanel>
+    </Grid>
+</Window>

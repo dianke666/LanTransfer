@@ -1,0 +1,72 @@
+{
+  "description": "连接前导与版本协商",
+  "protocol_version": "1.0",
+  "vectors": [
+    {
+      "name": "编码 1.0",
+      "version": "1.0",
+      "bytes": "4c414e540100"
+    },
+    {
+      "name": "编码 1.7",
+      "version": "1.7",
+      "bytes": "4c414e540107"
+    },
+    {
+      "name": "编码 255.255",
+      "version": "255.255",
+      "bytes": "4c414e54ffff"
+    },
+    {
+      "name": "magic 错误",
+      "bytes": "4c414e550100",
+      "error": "INVALID"
+    },
+    {
+      "name": "长度 5 字节",
+      "bytes": "4c414e5401",
+      "error": "INVALID"
+    },
+    {
+      "name": "长度 7 字节",
+      "bytes": "4c414e54010000",
+      "error": "INVALID"
+    },
+    {
+      "name": "协商 1.0 / 1.0",
+      "local": "1.0",
+      "remote": "1.0",
+      "negotiated": "1.0"
+    },
+    {
+      "name": "协商 1.2 / 1.0",
+      "local": "1.2",
+      "remote": "1.0",
+      "negotiated": "1.0"
+    },
+    {
+      "name": "协商 1.0 / 1.2",
+      "local": "1.0",
+      "remote": "1.2",
+      "negotiated": "1.0"
+    },
+    {
+      "name": "协商 2.5 / 2.3",
+      "local": "2.5",
+      "remote": "2.3",
+      "negotiated": "2.3"
+    },
+    {
+      "name": "协商 1.0 / 2.0",
+      "local": "1.0",
+      "remote": "2.0",
+      "negotiated": "INCOMPATIBLE"
+    },
+    {
+      "name": "协商 2.0 / 1.9",
+      "local": "2.0",
+      "remote": "1.9",
+      "negotiated": "INCOMPATIBLE"
+    }
+  ]
+}

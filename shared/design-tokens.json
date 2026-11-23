@@ -1,0 +1,112 @@
+{
+  "name": "LanTransfer Unified Design System",
+  "version": "1.0.0",
+  "targets": ["windows-wpf-fluent", "android-compose-m3", "ios-swiftui"],
+  "palette": {
+    "light": {
+      "canvas": "#F4F6FA",
+      "sidebar": "#EDF1F7",
+      "surface": "#FFFFFF",
+      "surfaceElevated": "#FFFFFF",
+      "surfaceSubtle": "#F8FAFC",
+      "surfaceHover": "#E8EEF7",
+      "surfaceSelected": "#DBEAFE",
+      "border": "#E2E8F0",
+      "borderStrong": "#CBD5E1",
+      "textPrimary": "#0F172A",
+      "textSecondary": "#475569",
+      "textMuted": "#64748B",
+      "accent": "#2563EB",
+      "accentHover": "#1D4ED8",
+      "accentPressed": "#1E40AF",
+      "accentSoft": "#EFF6FF",
+      "accentOn": "#FFFFFF",
+      "teal": "#0EA5E9",
+      "success": "#059669",
+      "successSoft": "#ECFDF5",
+      "warning": "#D97706",
+      "warningSoft": "#FFFBEB",
+      "danger": "#DC2626",
+      "dangerSoft": "#FEF2F2",
+      "bubbleOutgoing": "#2563EB",
+      "bubbleOutgoingText": "#FFFFFF",
+      "bubbleIncoming": "#FFFFFF",
+      "bubbleIncomingText": "#0F172A"
+    },
+    "dark": {
+      "canvas": "#0B1120",
+      "sidebar": "#0F172A",
+      "surface": "#162032",
+      "surfaceElevated": "#1E293B",
+      "surfaceSubtle": "#111A2B",
+      "surfaceHover": "#243248",
+      "surfaceSelected": "#1E3A5F",
+      "border": "#263449",
+      "borderStrong": "#334155",
+      "textPrimary": "#F1F5F9",
+      "textSecondary": "#94A3B8",
+      "textMuted": "#64748B",
+      "accent": "#3B82F6",
+      "accentHover": "#60A5FA",
+      "accentPressed": "#2563EB",
+      "accentSoft": "#172554",
+      "accentOn": "#FFFFFF",
+      "teal": "#38BDF8",
+      "success": "#10B981",
+      "successSoft": "#064E3B",
+      "warning": "#F59E0B",
+      "warningSoft": "#451A03",
+      "danger": "#EF4444",
+      "dangerSoft": "#450A0A",
+      "bubbleOutgoing": "#2563EB",
+      "bubbleOutgoingText": "#FFFFFF",
+      "bubbleIncoming": "#1E293B",
+      "bubbleIncomingText": "#F1F5F9"
+    }
+  },
+  "radii": {
+    "card": 16,
+    "subCard": 12,
+    "control": 10,
+    "chip": 8,
+    "pill": 999
+  },
+  "spacing": {
+    "xs": 4,
+    "sm": 8,
+    "md": 12,
+    "lg": 16,
+    "xl": 24
+  },
+  "deviceTypes": {
+    "ANDROID": { "code": 1, "label": "Android", "accent": "#10B981", "sfSymbol": "smartphone" },
+    "WINDOWS": { "code": 2, "label": "Windows", "accent": "#2563EB", "sfSymbol": "desktopcomputer" },
+    "IOS": { "code": 3, "label": "iOS", "accent": "#6366F1", "sfSymbol": "iphone" }
+  },
+  "ios": {
+    "minVersion": "17.0",
+    "continuousCornerRadius": true,
+    "haptics": {
+      "copy": "impactLight",
+      "pairSuccess": "success",
+      "transferComplete": "success",
+      "warning": "warning",
+      "error": "error"
+    },
+    "sfSymbols": {
+      "navDevices": "wifi",
+      "navHistory": "clock.arrow.circlepath",
+      "navSettings": "gearshape",
+      "scanQr": "qrcode.viewfinder",
+      "showQr": "qrcode",
+      "manualConnect": "network",
+      "encrypted": "checkmark.shield.fill",
+      "pickFiles": "doc.badge.plus",
+      "pickPhotos": "photo.on.rectangle",
+      "paste": "doc.on.clipboard",
+      "send": "paperplane.fill",
+      "quickLook": "eye",
+      "filesApp": "folder"
+    }
+  }
+}

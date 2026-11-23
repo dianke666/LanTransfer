@@ -1,0 +1,83 @@
+{
+  "description": "非法 UTF-8 的 TEXT：能作为 TEXT 解码，但严格 UTF-8 解码失败，应回复 TEXT_CORRUPT",
+  "protocol_version": "1.0",
+  "vectors": [
+    {
+      "name": "截断的 3 字节序列",
+      "kind": "truncated",
+      "text_utf8": "61e282",
+      "frame": "4c54200000002a01000000106162636465666768696a6b6c6d6e6f7002000000080000000000000000030000000361e282",
+      "expected": "TEXT_CORRUPT"
+    },
+    {
+      "name": "截断的 4 字节序列",
+      "kind": "truncated",
+      "text_utf8": "f09f98",
+      "frame": "4c54200000002a01000000106162636465666768696a6b6c6d6e6f70020000000800000000000000000300000003f09f98",
+      "expected": "TEXT_CORRUPT"
+    },
+    {
+      "name": "非最短形式 C0 80",
+      "kind": "overlong",
+      "text_utf8": "c080",
+      "frame": "4c54200000002901000000106162636465666768696a6b6c6d6e6f70020000000800000000000000000300000002c080",
+      "expected": "TEXT_CORRUPT"
+    },
+    {
+      "name": "非最短形式 E0 80 80",
+      "kind": "overlong",
+      "text_utf8": "e08080",
+      "frame": "4c54200000002a01000000106162636465666768696a6b6c6d6e6f70020000000800000000000000000300000003e08080",
+      "expected": "TEXT_CORRUPT"
+    },
+    {
+      "name": "编码 U+D800",
+      "kind": "surrogate",
+      "text_utf8": "eda080",
+      "frame": "4c54200000002a01000000106162636465666768696a6b6c6d6e6f70020000000800000000000000000300000003eda080",
+      "expected": "TEXT_CORRUPT"
+    },
+    {
+      "name": "编码 U+DFFF",
+      "kind": "surrogate",
+      "text_utf8": "61edbfbf62",
+      "frame": "4c54200000002c01000000106162636465666768696a6b6c6d6e6f7002000000080000000000000000030000000561edbfbf62",
+      "expected": "TEXT_CORRUPT"
+    },
+    {
+      "name": "大于 U+10FFFF",
+      "kind": "above-max",
+      "text_utf8": "f4908080",
+      "frame": "4c54200000002b01000000106162636465666768696a6b6c6d6e6f70020000000800000000000000000300000004f4908080",
+      "expected": "TEXT_CORRUPT"
+    },
+    {
+      "name": "F5 开头",
+      "kind": "above-max",
+      "text_utf8": "f5808080",
+      "frame": "4c54200000002b01000000106162636465666768696a6b6c6d6e6f70020000000800000000000000000300000004f5808080",
+      "expected": "TEXT_CORRUPT"
+    },
+    {
+      "name": "非法字节 FF",
+      "kind": "invalid-byte",
+      "text_utf8": "ff",
+      "frame": "4c54200000002801000000106162636465666768696a6b6c6d6e6f70020000000800000000000000000300000001ff",
+      "expected": "TEXT_CORRUPT"
+    },
+    {
+      "name": "没有前导字节的续字节",
+      "kind": "unexpected-continuation",
+      "text_utf8": "6180",
+      "frame": "4c54200000002901000000106162636465666768696a6b6c6d6e6f700200000008000000000000000003000000026180",
+      "expected": "TEXT_CORRUPT"
+    },
+    {
+      "name": "前导字节后缺少续字节",
+      "kind": "missing-continuation",
+      "text_utf8": "e228a1",
+      "frame": "4c54200000002a01000000106162636465666768696a6b6c6d6e6f70020000000800000000000000000300000003e228a1",
+      "expected": "TEXT_CORRUPT"
+    }
+  ]
+}

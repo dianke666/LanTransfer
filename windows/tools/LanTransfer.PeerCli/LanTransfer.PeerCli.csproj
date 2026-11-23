@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- .NET 命令行对端：JSON Lines 控制接口，用于与 JVM peer-cli 互通测试（interop-tests/） -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\LanTransfer.Protocol\LanTransfer.Protocol.csproj" />
+    <ProjectReference Include="..\..\src\LanTransfer.Domain\LanTransfer.Domain.csproj" />
+    <ProjectReference Include="..\..\src\LanTransfer.Engine\LanTransfer.Engine.csproj" />
+  </ItemGroup>
+</Project>

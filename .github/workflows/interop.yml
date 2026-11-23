@@ -1,0 +1,49 @@
+# 跨端互通测试（占位）：在 Windows runner 上同时构建 JVM peer-cli 与 .NET PeerCli。
+# 场景运行器、故障注入代理与场景 1–11 在任务 22.3、22.4 中接入。
+name: interop
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      nightly:
+        description: 是否运行仅夜间执行的场景（如 > 4 GiB 稀疏文件）
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  interop:
+    name: peer-cli <-> PeerCli
+    runs-on: windows-latest
+    timeout-minutes: 60
+    env:
+      LT_INTEROP_NIGHTLY: ${{ inputs.nightly && 'true' || 'false' }}
+      DOTNET_NOLOGO: "true"
+      DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: windows/global.json
+      - name: 构建 JVM peer-cli
+        working-directory: android
+        run: ./gradlew.bat :tools:peer-cli:installDist --stacktrace
+      - name: 构建 .NET PeerCli
+        working-directory: windows
+        run: dotnet build tools/LanTransfer.PeerCli -c Release
+      - name: 互通场景
+        run: Write-Output "互通场景在任务 22.3 中接入（nightly=$env:LT_INTEROP_NIGHTLY）"

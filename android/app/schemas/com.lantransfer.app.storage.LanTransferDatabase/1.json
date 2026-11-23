@@ -1,0 +1,435 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "26ffa5878a8f322b1d7543ec75845900",
+    "entities": [
+      {
+        "tableName": "schema_meta",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`key` TEXT NOT NULL, `value` INTEGER NOT NULL, PRIMARY KEY(`key`))",
+        "fields": [
+          {
+            "fieldPath": "key",
+            "columnName": "key",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "value",
+            "columnName": "value",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "key"
+          ]
+        }
+      },
+      {
+        "tableName": "trusted_device",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`device_id` BLOB NOT NULL, `display_name` TEXT NOT NULL, `device_type` INTEGER NOT NULL, `public_key` BLOB NOT NULL, `auto_accept` INTEGER NOT NULL DEFAULT 0, `paired_at` INTEGER NOT NULL, `last_ip` INTEGER, `last_port` INTEGER, PRIMARY KEY(`device_id`))",
+        "fields": [
+          {
+            "fieldPath": "deviceId",
+            "columnName": "device_id",
+            "affinity": "BLOB",
+            "notNull": true
+          },
+          {
+            "fieldPath": "displayName",
+            "columnName": "display_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "deviceType",
+            "columnName": "device_type",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "publicKey",
+            "columnName": "public_key",
+            "affinity": "BLOB",
+            "notNull": true
+          },
+          {
+            "fieldPath": "autoAccept",
+            "columnName": "auto_accept",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "pairedAt",
+            "columnName": "paired_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastIp",
+            "columnName": "last_ip",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "lastPort",
+            "columnName": "last_port",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "device_id"
+          ]
+        }
+      },
+      {
+        "tableName": "text_message",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`seq` INTEGER NOT NULL, `peer_id` BLOB NOT NULL, `message_id` BLOB NOT NULL, `direction` INTEGER NOT NULL, `peer_name` TEXT NOT NULL, `text_utf8` BLOB NOT NULL, `sent_at` INTEGER NOT NULL, `recorded_at` INTEGER NOT NULL, `recorded_tz` INTEGER NOT NULL, `status` INTEGER NOT NULL, PRIMARY KEY(`seq`))",
+        "fields": [
+          {
+            "fieldPath": "seq",
+            "columnName": "seq",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "peerId",
+            "columnName": "peer_id",
+            "affinity": "BLOB",
+            "notNull": true
+          },
+          {
+            "fieldPath": "messageId",
+            "columnName": "message_id",
+            "affinity": "BLOB",
+            "notNull": true
+          },
+          {
+            "fieldPath": "direction",
+            "columnName": "direction",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "peerName",
+            "columnName": "peer_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "textUtf8",
+            "columnName": "text_utf8",
+            "affinity": "BLOB",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sentAt",
+            "columnName": "sent_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "recordedAt",
+            "columnName": "recorded_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "recordedTz",
+            "columnName": "recorded_tz",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "seq"
+          ]
+        },
+        "indices": [
+          {
+            "name": "ux_text_message_peer_msg",
+            "unique": true,
+            "columnNames": [
+              "peer_id",
+              "message_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `ux_text_message_peer_msg` ON `${TABLE_NAME}` (`peer_id`, `message_id`)"
+          },
+          {
+            "name": "ix_text_message_order",
+            "unique": false,
+            "columnNames": [
+              "recorded_at",
+              "seq"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `ix_text_message_order` ON `${TABLE_NAME}` (`recorded_at`, `seq`)"
+          }
+        ]
+      },
+      {
+        "tableName": "transfer_task",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`transfer_id` BLOB NOT NULL, `peer_id` BLOB NOT NULL, `peer_name` TEXT NOT NULL, `direction` INTEGER NOT NULL, `state` INTEGER NOT NULL, `interrupt_reason` INTEGER, `interrupt_detail` TEXT, `receive_dir` TEXT, `recorded_at` INTEGER NOT NULL, `recorded_tz` INTEGER NOT NULL, `updated_at` INTEGER NOT NULL, PRIMARY KEY(`transfer_id`))",
+        "fields": [
+          {
+            "fieldPath": "transferId",
+            "columnName": "transfer_id",
+            "affinity": "BLOB",
+            "notNull": true
+          },
+          {
+            "fieldPath": "peerId",
+            "columnName": "peer_id",
+            "affinity": "BLOB",
+            "notNull": true
+          },
+          {
+            "fieldPath": "peerName",
+            "columnName": "peer_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "direction",
+            "columnName": "direction",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "state",
+            "columnName": "state",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "interruptReason",
+            "columnName": "interrupt_reason",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "interruptDetail",
+            "columnName": "interrupt_detail",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "receiveDir",
+            "columnName": "receive_dir",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "recordedAt",
+            "columnName": "recorded_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "recordedTz",
+            "columnName": "recorded_tz",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "transfer_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "ix_transfer_task_order",
+            "unique": false,
+            "columnNames": [
+              "recorded_at"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `ix_transfer_task_order` ON `${TABLE_NAME}` (`recorded_at`)"
+          },
+          {
+            "name": "ix_transfer_task_peer_state",
+            "unique": false,
+            "columnNames": [
+              "peer_id",
+              "state"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `ix_transfer_task_peer_state` ON `${TABLE_NAME}` (`peer_id`, `state`)"
+          }
+        ]
+      },
+      {
+        "tableName": "transfer_file",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`transfer_id` BLOB NOT NULL, `file_index` INTEGER NOT NULL, `seq` INTEGER NOT NULL, `original_name` TEXT NOT NULL, `size` INTEGER NOT NULL, `mime` TEXT NOT NULL, `mtime` INTEGER, `state` INTEGER NOT NULL, `persisted` INTEGER NOT NULL DEFAULT 0, `sha256` BLOB, `source_ref` TEXT, `temp_ref` TEXT, `started_at` TEXT, `last_write_at` INTEGER, `final_name` TEXT, `full_path` TEXT, `stored_ref` TEXT, PRIMARY KEY(`transfer_id`, `file_index`))",
+        "fields": [
+          {
+            "fieldPath": "transferId",
+            "columnName": "transfer_id",
+            "affinity": "BLOB",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fileIndex",
+            "columnName": "file_index",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "seq",
+            "columnName": "seq",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "originalName",
+            "columnName": "original_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "size",
+            "columnName": "size",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mime",
+            "columnName": "mime",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mtime",
+            "columnName": "mtime",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "state",
+            "columnName": "state",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "persisted",
+            "columnName": "persisted",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "sha256",
+            "columnName": "sha256",
+            "affinity": "BLOB"
+          },
+          {
+            "fieldPath": "sourceRef",
+            "columnName": "source_ref",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "tempRef",
+            "columnName": "temp_ref",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "startedAt",
+            "columnName": "started_at",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "lastWriteAt",
+            "columnName": "last_write_at",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "finalName",
+            "columnName": "final_name",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "fullPath",
+            "columnName": "full_path",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "storedRef",
+            "columnName": "stored_ref",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "transfer_id",
+            "file_index"
+          ]
+        },
+        "indices": [
+          {
+            "name": "ux_transfer_file_seq",
+            "unique": true,
+            "columnNames": [
+              "seq"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `ux_transfer_file_seq` ON `${TABLE_NAME}` (`seq`)"
+          }
+        ]
+      },
+      {
+        "tableName": "pending_cancel",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`peer_id` BLOB NOT NULL, `transfer_id` BLOB NOT NULL, `created_at` INTEGER NOT NULL, PRIMARY KEY(`peer_id`, `transfer_id`))",
+        "fields": [
+          {
+            "fieldPath": "peerId",
+            "columnName": "peer_id",
+            "affinity": "BLOB",
+            "notNull": true
+          },
+          {
+            "fieldPath": "transferId",
+            "columnName": "transfer_id",
+            "affinity": "BLOB",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "peer_id",
+            "transfer_id"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '26ffa5878a8f322b1d7543ec75845900')"
+    ]
+  }
+}

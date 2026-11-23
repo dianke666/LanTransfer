@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- 领域层：与 Android core/domain 对应；纯函数与确定性对象，不依赖平台 API，不做 I/O -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LanTransfer.Protocol\LanTransfer.Protocol.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="LanTransfer.Domain.Tests" />
+    <InternalsVisibleTo Include="LanTransfer.Testing" />
+  </ItemGroup>
+</Project>

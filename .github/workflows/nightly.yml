@@ -1,0 +1,24 @@
+# 夜间任务：属性测试迭代次数 × 10（LT_PBT_SCALE=10），并运行仅夜间执行的互通场景。
+name: nightly
+
+on:
+  schedule:
+    - cron: "0 18 * * *" # UTC 18:00，即北京时间 02:00
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  android-jvm:
+    uses: ./.github/workflows/android-jvm.yml
+    with:
+      pbt-scale: "10"
+  windows:
+    uses: ./.github/workflows/windows.yml
+    with:
+      pbt-scale: "10"
+  interop:
+    uses: ./.github/workflows/interop.yml
+    with:
+      nightly: true

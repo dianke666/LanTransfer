@@ -1,0 +1,212 @@
+{
+  "description": "需求 12.2–12.4 每个字符类的 TEXT；frame 以 message_id、sent_at 编码",
+  "protocol_version": "1.0",
+  "message_id": "606162636465666768696a6b6c6d6e6f",
+  "sent_at": "1735693805000",
+  "vectors": [
+    {
+      "name": "字符类 lf",
+      "class": [
+        "lf"
+      ],
+      "text_utf8": "610a62",
+      "frame": "4c54200000002a0100000010606162636465666768696a6b6c6d6e6f0200000008000001941f69a5c80300000003610a62"
+    },
+    {
+      "name": "字符类 cr",
+      "class": [
+        "cr"
+      ],
+      "text_utf8": "610d62",
+      "frame": "4c54200000002a0100000010606162636465666768696a6b6c6d6e6f0200000008000001941f69a5c80300000003610d62"
+    },
+    {
+      "name": "字符类 crlf",
+      "class": [
+        "crlf"
+      ],
+      "text_utf8": "610d0a62",
+      "frame": "4c54200000002b0100000010606162636465666768696a6b6c6d6e6f0200000008000001941f69a5c80300000004610d0a62"
+    },
+    {
+      "name": "字符类 tab",
+      "class": [
+        "tab"
+      ],
+      "text_utf8": "610962",
+      "frame": "4c54200000002a0100000010606162636465666768696a6b6c6d6e6f0200000008000001941f69a5c80300000003610962"
+    },
+    {
+      "name": "字符类 consecutive-spaces",
+      "class": [
+        "consecutive-spaces"
+      ],
+      "text_utf8": "6120207c2020207c20202020202062",
+      "frame": "4c5420000000360100000010606162636465666768696a6b6c6d6e6f0200000008000001941f69a5c8030000000f6120207c2020207c20202020202062"
+    },
+    {
+      "name": "字符类 edge-whitespace",
+      "class": [
+        "edge-whitespace"
+      ],
+      "text_utf8": "20090a0d0ac2a0e38080e4b8ade38080c2a00d0a0a0920",
+      "frame": "4c54200000003e0100000010606162636465666768696a6b6c6d6e6f0200000008000001941f69a5c8030000001720090a0d0ac2a0e38080e4b8ade38080c2a00d0a0a0920"
+    },
+    {
+      "name": "字符类 nbsp",
+      "class": [
+        "nbsp"
+      ],
+      "text_utf8": "61c2a062",
+      "frame": "4c54200000002b0100000010606162636465666768696a6b6c6d6e6f0200000008000001941f69a5c8030000000461c2a062"
+    },
+    {
+      "name": "字符类 ideographic-space",
+      "class": [
+        "ideographic-space"
+      ],
+      "text_utf8": "61e3808062",
+      "frame": "4c54200000002c0100000010606162636465666768696a6b6c6d6e6f0200000008000001941f69a5c8030000000561e3808062"
+    },
+    {
+      "name": "字符类 nul",
+      "class": [
+        "nul"
+      ],
+      "text_utf8": "610062",
+      "frame": "4c54200000002a0100000010606162636465666768696a6b6c6d6e6f0200000008000001941f69a5c80300000003610062"
+    },
+    {
+      "name": "字符类 c0-control",
+      "class": [
+        "c0-control"
+      ],
+      "text_utf8": "61017c027c037c047c057c067c077c087c097c0a7c0b7c0c7c0d7c0e7c0f7c107c117c127c137c147c157c167c177c187c197c1a7c1b7c1c7c1d7c1e7c1f62",
+      "frame": "4c5420000000660100000010606162636465666768696a6b6c6d6e6f0200000008000001941f69a5c8030000003f61017c027c037c047c057c067c077c087c097c0a7c0b7c0c7c0d7c0e7c0f7c107c117c127c137c147c157c167c177c187c197c1a7c1b7c1c7c1d7c1e7c1f62"
+    },
+    {
+      "name": "字符类 del",
+      "class": [
+        "del"
+      ],
+      "text_utf8": "617f62",
+      "frame": "4c54200000002a0100000010606162636465666768696a6b6c6d6e6f0200000008000001941f69a5c80300000003617f62"
+    },
+    {
+      "name": "字符类 c1-control",
+      "class": [
+        "c1-control"
+      ],
+      "text_utf8": "61c2807cc2817cc2827cc2837cc2847cc2857cc2867cc2877cc2887cc2897cc28a7cc28b7cc28c7cc28d7cc28e7cc28f7cc2907cc2917cc2927cc2937cc2947cc2957cc2967cc2977cc2987cc2997cc29a7cc29b7cc29c7cc29d7cc29e7cc29f62",
+      "frame": "4c5420000000880100000010606162636465666768696a6b6c6d6e6f0200000008000001941f69a5c8030000006161c2807cc2817cc2827cc2837cc2847cc2857cc2867cc2877cc2887cc2897cc28a7cc28b7cc28c7cc28d7cc28e7cc28f7cc2907cc2917cc2927cc2937cc2947cc2957cc2967cc2977cc2987cc2997cc29a7cc29b7cc29c7cc29d7cc29e7cc29f62"
+    },
+    {
+      "name": "字符类 zwj-sequence",
+      "class": [
+        "zwj-sequence"
+      ],
+      "text_utf8": "61f09f91a8e2808df09f91a9e2808df09f91a77cf09f8fb3efb88fe2808df09f8c887cf09f91a9f09f8fbde2808df09f92bb62",
+      "frame": "4c54200000005a0100000010606162636465666768696a6b6c6d6e6f0200000008000001941f69a5c8030000003361f09f91a8e2808df09f91a9e2808df09f91a77cf09f8fb3efb88fe2808df09f8c887cf09f91a9f09f8fbde2808df09f92bb62"
+    },
+    {
+      "name": "字符类 skin-tone-modifier",
+      "class": [
+        "skin-tone-modifier"
+      ],
+      "text_utf8": "61f09f918df09f8fbd7cf09f918bf09f8fbf7cf09fa791f09f8fbb62",
+      "frame": "4c5420000000430100000010606162636465666768696a6b6c6d6e6f0200000008000001941f69a5c8030000001c61f09f918df09f8fbd7cf09f918bf09f8fbf7cf09fa791f09f8fbb62"
+    },
+    {
+      "name": "字符类 variation-selector-16",
+      "class": [
+        "variation-selector-16"
+      ],
+      "text_utf8": "61e29da4efb88f7ce298baefb88f7c31efb88fe283a362",
+      "frame": "4c54200000003e0100000010606162636465666768696a6b6c6d6e6f0200000008000001941f69a5c8030000001761e29da4efb88f7ce298baefb88f7c31efb88fe283a362"
+    },
+    {
+      "name": "字符类 zero-width",
+      "class": [
+        "zero-width"
+      ],
+      "text_utf8": "61e2808b7ce2808c7ce2808d7ce281a062",
+      "frame": "4c5420000000380100000010606162636465666768696a6b6c6d6e6f0200000008000001941f69a5c8030000001161e2808b7ce2808c7ce2808d7ce281a062"
+    },
+    {
+      "name": "字符类 bom",
+      "class": [
+        "bom"
+      ],
+      "text_utf8": "61efbbbf62",
+      "frame": "4c54200000002c0100000010606162636465666768696a6b6c6d6e6f0200000008000001941f69a5c8030000000561efbbbf62"
+    },
+    {
+      "name": "字符类 combining-mark",
+      "class": [
+        "combining-mark"
+      ],
+      "text_utf8": "6165cc817c61cc887ce2839d7ce0a495e0a58de0a4b77ce18480e185a1e186a862",
+      "frame": "4c5420000000480100000010606162636465666768696a6b6c6d6e6f0200000008000001941f69a5c803000000216165cc817c61cc887ce2839d7ce0a495e0a58de0a4b77ce18480e185a1e186a862"
+    },
+    {
+      "name": "字符类 supplementary-plane",
+      "class": [
+        "supplementary-plane"
+      ],
+      "text_utf8": "61f09080807cf09f98807cf0a080807cf0aa9b967cf09d849e62",
+      "frame": "4c5420000000410100000010606162636465666768696a6b6c6d6e6f0200000008000001941f69a5c8030000001a61f09080807cf09f98807cf0a080807cf0aa9b967cf09d849e62"
+    },
+    {
+      "name": "字符类 private-use",
+      "class": [
+        "private-use"
+      ],
+      "text_utf8": "61ee80807cefa3bf7cf3b080807cf3bfbfbd7cf48080807cf48fbfbd62",
+      "frame": "4c5420000000440100000010606162636465666768696a6b6c6d6e6f0200000008000001941f69a5c8030000001d61ee80807cefa3bf7cf3b080807cf3bfbfbd7cf48080807cf48fbfbd62"
+    },
+    {
+      "name": "字符类 unassigned",
+      "class": [
+        "unassigned"
+      ],
+      "text_utf8": "61cdb87ccdb97cf19080807cf28fbfbd62",
+      "frame": "4c5420000000380100000010606162636465666768696a6b6c6d6e6f0200000008000001941f69a5c8030000001161cdb87ccdb97cf19080807cf28fbfbd62"
+    },
+    {
+      "name": "字符类 noncharacter",
+      "class": [
+        "noncharacter"
+      ],
+      "text_utf8": "61efbfbe7cefbfbf7cefb7907cefb7af7cf09fbfbe7cf48fbfbf62",
+      "frame": "4c5420000000420100000010606162636465666768696a6b6c6d6e6f0200000008000001941f69a5c8030000001b61efbfbe7cefbfbf7cefb7907cefb7af7cf09fbfbe7cf48fbfbf62"
+    },
+    {
+      "name": "开头的 U+FEFF 与结尾的 U+3000",
+      "class": [
+        "bom",
+        "edge-whitespace",
+        "ideographic-space"
+      ],
+      "text_utf8": "efbbbfe5bc80e5a4b4e38080",
+      "frame": "4c5420000000330100000010606162636465666768696a6b6c6d6e6f0200000008000001941f69a5c8030000000cefbbbfe5bc80e5a4b4e38080"
+    },
+    {
+      "name": "混合：CRLF、单独 CR、LF、TAB、NUL",
+      "class": [
+        "crlf",
+        "cr",
+        "lf",
+        "tab",
+        "nul"
+      ],
+      "text_utf8": "e7acace4b880e8a18c0d0ae7acace4ba8ce8a18c0de7acace4b889e8a18c0a09e7bca9e8bf9b00e4b98be5908e",
+      "frame": "4c5420000000540100000010606162636465666768696a6b6c6d6e6f0200000008000001941f69a5c8030000002de7acace4b880e8a18c0d0ae7acace4ba8ce8a18c0de7acace4b889e8a18c0a09e7bca9e8bf9b00e4b98be5908e"
+    },
+    {
+      "name": "空文本",
+      "class": [],
+      "text_utf8": "",
+      "frame": "4c5420000000270100000010606162636465666768696a6b6c6d6e6f0200000008000001941f69a5c80300000000"
+    }
+  ]
+}
