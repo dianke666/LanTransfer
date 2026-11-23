@@ -499,7 +499,13 @@ public struct ConversationView: View {
                     .buttonStyle(.plain)
 
                     PhotosPicker(selection: $selectedPhotoItems, maxSelectionCount: 50, matching: .any(of: [.images, .videos])) {
-                        toolPillLabel(UiText.iosBtnPickPhotos, systemImage: "photo.on.rectangle", palette: palette)
+                        Label(UiText.iosBtnPickPhotos, systemImage: "photo.on.rectangle")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(palette.textSecondary)
+                            .padding(.horizontal, 11)
+                            .padding(.vertical, 6)
+                            .background(Capsule().fill(palette.surface))
+                            .overlay(Capsule().strokeBorder(palette.border, lineWidth: 1))
                     }
                     .buttonStyle(.plain)
 

@@ -1,4 +1,5 @@
 import AVFoundation
+import Combine
 import CoreImage
 import CoreImage.CIFilterBuiltins
 import LanTransferDomain
@@ -23,88 +24,16 @@ public struct QrShowSheet: View {
 
     public var body: some View {
         let palette = LanPalette.resolve(colorScheme)
-        let interfaces = controller.snapshot.localInterfaces
-        let port = controller.snapshot.listenPort ?? ProtocolConstants.defaultPort
-
         NavigationStack {
-            ScrollView {
-                VStack(spacing: LanSpacing.lg) {
-                    if let qrText, let uiImage = Self.renderQrImage(from: qrText) {
-                        Image(uiImage: uiImage)
-                            .interpolation(.none)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 210, height: 210)
-                            .padding(18)
-                            .background(
-                                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                                    .fill(Color.white)
-                            )
-                            .shadow(color: Color.black.opacity(0.08), radius: 14, y: 6)
-
-                        Text(UiText.labelQrHint)
-                            .font(.footnote)
-                            .multilineTextAlignment(.center)
-                            .foregroundStyle(palette.textSecondary)
-
-                        HStack(spacing: 6) {
-                            ForEach(AddressRules.qrAddressList(sortedInterfaces: interfaces), id: \.self) { ip in
-                                Text("\(ip.description):\(port)")
-                                    .font(.caption.monospaced())
-                                    .foregroundStyle(palette.textSecondary)
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 5)
-                                    .background(RoundedRectangle(cornerRadius: LanRadii.chip, style: .continuous).fill(palette.surface))
-                                    .overlay(RoundedRectangle(cornerRadius: LanRadii.chip, style: .continuous).strokeBorder(palette.border, lineWidth: 1))
-                            }
-                        }
-
-                        Text(UiText.labelQrAutoRefresh)
-                            .font(.caption)
-                            .foregroundStyle(palette.textMuted)
-
-                        if screenshotTaken {
-                            HStack(spacing: 8) {
-                                Image(systemName: "exclamationmark.shield.fill")
-                                Text(UiText.iosQrScreenshotWarning)
-                            }
-                            .font(.caption)
-                            .foregroundStyle(palette.warning)
-                            .padding(10)
-                            .frame(maxWidth: .infinity)
-                            .background(RoundedRectangle(cornerRadius: LanRadii.subCard, style: .continuous).fill(palette.warningSoft))
-                        }
-
-                        Button {
-                            Task { qrText = await controller.engine.currentQrText(forceRefresh: true) }
-                        } label: {
-                            Label(UiText.btnRefreshQr, systemImage: "arrow.clockwise")
-                                .font(.subheadline.weight(.semibold))
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 12)
-                                .foregroundStyle(palette.accent)
-                                .background(RoundedRectangle(cornerRadius: LanRadii.subCard, style: .continuous).fill(palette.accentSoft))
-                        }
-                        .buttonStyle(.plain)
-                    } else {
-                        ContentUnavailableView(
-                            UiText.errorNoNetworkQr,
-                            systemImage: "wifi.slash",
-                            description: Text(UiText.bannerNoNetwork)
-                        )
-                        .padding(.top, 40)
+            qrScrollContent(palette: palette)
+                .background(palette.canvas.ignoresSafeArea())
+                .navigationTitle(UiText.btnQrPair)
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button(UiText.btnClose) { dismiss() }
                     }
                 }
-                .padding(LanSpacing.xl)
-            }
-            .background(palette.canvas.ignoresSafeArea())
-            .navigationTitle(UiText.btnQrPair)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(UiText.btnClose) { dismiss() }
-                }
-            }
         }
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
@@ -112,21 +41,135 @@ public struct QrShowSheet: View {
             await refreshLoop()
         }
         .onAppear {
-            if let screen = Self.activeScreen() {
-                let current = screen.brightness
-                savedBrightness = current
-                if current < 0.78 {
-                    screen.brightness = 0.78
-                }
-            }
+            boostBrightness()
         }
         .onDisappear {
-            if let saved = savedBrightness, let screen = Self.activeScreen() {
-                screen.brightness = saved
-            }
+            restoreBrightness()
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.userDidTakeScreenshotNotification)) { _ in
             screenshotTaken = true
+        }
+    }
+
+    private func qrScrollContent(palette: LanPalette) -> some View {
+        ScrollView {
+            VStack(spacing: LanSpacing.lg) {
+                if let qrText, let uiImage = Self.renderQrImage(from: qrText) {
+                    qrReadySection(uiImage: uiImage, palette: palette)
+                } else {
+                    ContentUnavailableView(
+                        UiText.errorNoNetworkQr,
+                        systemImage: "wifi.slash",
+                        description: Text(UiText.bannerNoNetwork)
+                    )
+                    .padding(.top, 40)
+                }
+            }
+            .padding(LanSpacing.xl)
+        }
+    }
+
+    @ViewBuilder
+    private func qrReadySection(uiImage: UIImage, palette: LanPalette) -> some View {
+        let interfaces = controller.snapshot.localInterfaces
+        let port = controller.snapshot.listenPort ?? ProtocolConstants.defaultPort
+        let ips = AddressRules.qrAddressList(sortedInterfaces: interfaces)
+
+        Image(uiImage: uiImage)
+            .interpolation(.none)
+            .resizable()
+            .scaledToFit()
+            .frame(width: 210, height: 210)
+            .padding(18)
+            .background(
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(Color.white)
+            )
+            .shadow(color: Color.black.opacity(0.08), radius: 14, y: 6)
+
+        Text(UiText.labelQrHint)
+            .font(.footnote)
+            .multilineTextAlignment(.center)
+            .foregroundStyle(palette.textSecondary)
+
+        qrAddressChips(ips: ips, port: port, palette: palette)
+
+        Text(UiText.labelQrAutoRefresh)
+            .font(.caption)
+            .foregroundStyle(palette.textMuted)
+
+        if screenshotTaken {
+            screenshotWarningBanner(palette: palette)
+        }
+
+        refreshQrButton(palette: palette)
+    }
+
+    private func qrAddressChips(ips: [Ipv4], port: Int, palette: LanPalette) -> some View {
+        HStack(spacing: 6) {
+            ForEach(ips, id: \.self) { ip in
+                Text("\(ip.description):\(port)")
+                    .font(.caption.monospaced())
+                    .foregroundStyle(palette.textSecondary)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(
+                        RoundedRectangle(cornerRadius: LanRadii.chip, style: .continuous)
+                            .fill(palette.surface)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: LanRadii.chip, style: .continuous)
+                            .strokeBorder(palette.border, lineWidth: 1)
+                    )
+            }
+        }
+    }
+
+    private func screenshotWarningBanner(palette: LanPalette) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: "exclamationmark.shield.fill")
+            Text(UiText.iosQrScreenshotWarning)
+        }
+        .font(.caption)
+        .foregroundStyle(palette.warning)
+        .padding(10)
+        .frame(maxWidth: .infinity)
+        .background(
+            RoundedRectangle(cornerRadius: LanRadii.subCard, style: .continuous)
+                .fill(palette.warningSoft)
+        )
+    }
+
+    private func refreshQrButton(palette: LanPalette) -> some View {
+        Button {
+            Task { qrText = await controller.engine.currentQrText(forceRefresh: true) }
+        } label: {
+            Label(UiText.btnRefreshQr, systemImage: "arrow.clockwise")
+                .font(.subheadline.weight(.semibold))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .foregroundStyle(palette.accent)
+                .background(
+                    RoundedRectangle(cornerRadius: LanRadii.subCard, style: .continuous)
+                        .fill(palette.accentSoft)
+                )
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func boostBrightness() {
+        if let screen = Self.activeScreen() {
+            let current = screen.brightness
+            savedBrightness = current
+            if current < 0.78 {
+                screen.brightness = 0.78
+            }
+        }
+    }
+
+    private func restoreBrightness() {
+        if let saved = savedBrightness, let screen = Self.activeScreen() {
+            screen.brightness = saved
         }
     }
 
@@ -185,96 +228,9 @@ public struct QrScanView: View {
                 }
                 .ignoresSafeArea()
 
-                // 取景框遮罩与引导
-                VStack {
-                    HStack {
-                        Button(UiText.btnCancel) { dismiss() }
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 8)
-                            .background(Capsule().fill(Color.black.opacity(0.48)))
-                        Spacer()
-                        Text(UiText.btnScanQr)
-                            .font(.headline)
-                            .foregroundStyle(.white)
-                        Spacer()
-                        Button {
-                            torchOn.toggle()
-                        } label: {
-                            Image(systemName: torchOn ? "flashlight.on.fill" : "flashlight.off.fill")
-                                .font(.body.weight(.semibold))
-                                .foregroundStyle(torchOn ? Color.yellow : Color.white)
-                                .padding(10)
-                                .background(Circle().fill(Color.black.opacity(0.48)))
-                        }
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 12)
-
-                    Spacer()
-
-                    RoundedRectangle(cornerRadius: 24, style: .continuous)
-                        .strokeBorder(Color(hex: 0x3B82F6), lineWidth: 3)
-                        .frame(width: 240, height: 240)
-                        .background(Color.clear)
-
-                    if let errorHint {
-                        Text(errorHint)
-                            .font(.footnote.weight(.semibold))
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 8)
-                            .background(Capsule().fill(Color(hex: 0xDC2626).opacity(0.9)))
-                            .padding(.top, 16)
-                    } else {
-                        Text(UiText.labelQrHint)
-                            .font(.footnote)
-                            .foregroundStyle(Color.white.opacity(0.88))
-                            .padding(.top, 16)
-                    }
-
-                    Spacer()
-
-                    Button {
-                        dismiss()
-                        controller.showManualConnect = true
-                    } label: {
-                        Text(UiText.btnManualConnect)
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 24)
-                            .padding(.vertical, 12)
-                            .background(.ultraThinMaterial, in: Capsule())
-                    }
-                    .padding(.bottom, 28)
-                }
+                scannerOverlayView
             } else {
-                VStack(spacing: LanSpacing.lg) {
-                    Image(systemName: "camera.viewfinder")
-                        .font(.system(size: 48))
-                        .foregroundStyle(Color(hex: 0x3B82F6))
-                    Text(UiText.labelCameraPermissionHint)
-                        .font(.body)
-                        .multilineTextAlignment(.center)
-                        .foregroundStyle(.white)
-                    HStack(spacing: LanSpacing.md) {
-                        Button(UiText.btnOpenAppSettings) {
-                            controller.openSystemAppSettings()
-                        }
-                        .buttonStyle(.borderedProminent)
-                        Button(UiText.btnManualConnect) {
-                            dismiss()
-                            controller.showManualConnect = true
-                        }
-                        .buttonStyle(.bordered)
-                        .tint(.white)
-                    }
-                    Button(UiText.btnCancel) { dismiss() }
-                        .foregroundStyle(Color.white.opacity(0.75))
-                        .padding(.top, 8)
-                }
-                .padding(LanSpacing.xl)
+                cameraPermissionFallbackView
             }
         }
         .task {
@@ -283,6 +239,100 @@ public struct QrScanView: View {
                 permissionStatus = granted ? .authorized : .denied
             }
         }
+    }
+
+    private var scannerOverlayView: some View {
+        VStack {
+            HStack {
+                Button(UiText.btnCancel) { dismiss() }
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .background(Capsule().fill(Color.black.opacity(0.48)))
+                Spacer()
+                Text(UiText.btnScanQr)
+                    .font(.headline)
+                    .foregroundStyle(.white)
+                Spacer()
+                Button {
+                    torchOn.toggle()
+                } label: {
+                    Image(systemName: torchOn ? "flashlight.on.fill" : "flashlight.off.fill")
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(torchOn ? Color.yellow : Color.white)
+                        .padding(10)
+                        .background(Circle().fill(Color.black.opacity(0.48)))
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 12)
+
+            Spacer()
+
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .strokeBorder(Color(hex: 0x3B82F6), lineWidth: 3)
+                .frame(width: 240, height: 240)
+                .background(Color.clear)
+
+            if let errorHint {
+                Text(errorHint)
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .background(Capsule().fill(Color(hex: 0xDC2626).opacity(0.9)))
+                    .padding(.top, 16)
+            } else {
+                Text(UiText.labelQrHint)
+                    .font(.footnote)
+                    .foregroundStyle(Color.white.opacity(0.88))
+                    .padding(.top, 16)
+            }
+
+            Spacer()
+
+            Button {
+                dismiss()
+                controller.showManualConnect = true
+            } label: {
+                Text(UiText.btnManualConnect)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 12)
+                    .background(.ultraThinMaterial, in: Capsule())
+            }
+            .padding(.bottom, 28)
+        }
+    }
+
+    private var cameraPermissionFallbackView: some View {
+        VStack(spacing: LanSpacing.lg) {
+            Image(systemName: "camera.viewfinder")
+                .font(.system(size: 48))
+                .foregroundStyle(Color(hex: 0x3B82F6))
+            Text(UiText.labelCameraPermissionHint)
+                .font(.body)
+                .multilineTextAlignment(.center)
+                .foregroundStyle(.white)
+            HStack(spacing: LanSpacing.md) {
+                Button(UiText.btnOpenAppSettings) {
+                    controller.openSystemAppSettings()
+                }
+                .buttonStyle(.borderedProminent)
+                Button(UiText.btnManualConnect) {
+                    dismiss()
+                    controller.showManualConnect = true
+                }
+                .buttonStyle(.bordered)
+                .tint(.white)
+            }
+            Button(UiText.btnCancel) { dismiss() }
+                .foregroundStyle(Color.white.opacity(0.75))
+                .padding(.top, 8)
+        }
+        .padding(LanSpacing.xl)
     }
 
     private func handleDetectedCode(_ code: String) {
