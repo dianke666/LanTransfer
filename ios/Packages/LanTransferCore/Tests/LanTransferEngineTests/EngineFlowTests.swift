@@ -61,7 +61,8 @@ final class EngineFlowTests: XCTestCase {
         await hostB.start()
 
         // 1. B 展示二维码，A 扫码配对
-        let qrText = try XCTUnwrap(await hostB.currentQrText())
+        let rawQr = await hostB.currentQrText()
+        let qrText = try XCTUnwrap(rawQr)
         let qrErr = await hostA.pairingService.pairByQr(text: qrText)
         XCTAssertNil(qrErr)
 
