@@ -4,7 +4,7 @@
 
 - **Android_App**：Android 8.0（API 26）及以上（Material 3 / Jetpack Compose，支持浅色 / 深色 / 跟随系统）
 - **Windows_Client**：Windows 10 版本 1809 及以上的 x64 系统（Fluent Win11 风格 WPF，支持浅色 / 深色 / 跟随系统与原生沉浸式暗色标题栏）
-- **iOS_App（Wave 0–5 代码已完成，待 macOS / Xcode 16+ 编译与真机联调）**：iOS 17.0+（原生 SwiftUI / Apple HIG / 零第三方依赖）；涵盖纯 `CryptoKit` Noise_XX 协议层、领域层与 3 大归约器、全套并发引擎、iOS 原生平台适配层（Network/Keychain/SQLite M2/Files/ShareExtension）、9 大 SwiftUI 界面及 10 份共享向量单元测试
+- **iOS_App（Wave 0–5 已通过 GitHub Actions macOS-15 / Xcode 16.4 全量编译、单元测试、模拟器测试与免签名 IPA 构建；待真机联调）**：iOS 17.0+（原生 SwiftUI / Apple HIG / 零第三方依赖）；涵盖纯 `CryptoKit` Noise_XX 协议层、领域层与 3 大归约器、全套并发引擎、iOS 原生平台适配层（Network/Keychain/SQLite M2/Files/ShareExtension）、9 大 SwiftUI 界面及 10 份共享向量单元测试
 
 需求、设计与实施计划见 `.kiro/specs/lan-file-transfer/`（iOS 分阶段任务清单见 [ios-tasks.md](.kiro/specs/lan-file-transfer/ios-tasks.md)）。
 
@@ -42,15 +42,16 @@ iscc windows/installer/LanTransfer.iss
 # 产物：android/app/build/outputs/apk/debug/app-debug.apk
 ```
 
-### iOS 端（macOS 14+ / Xcode 16+ / Swift 6）
+### iOS 端（macOS 14+ / Xcode 16+ / Swift 6，或直接通过 GitHub Actions 云端构建）
 ```bash
 # 运行纯 Swift 核心单元测试（含共享协议测试向量校验）
 swift test --package-path ios/Packages/LanTransferCore
 
-# 生成 Xcode 工程并构建 iOS 模拟器包（免签名）
+# 生成 Xcode 工程并运行 iOS 模拟器测试（免签名）
 cd ios && xcodegen generate
 xcodebuild -project LanTransfer.xcodeproj -scheme LanTransferApp -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
 ```
+> 无本地 macOS 时，推送到 GitHub 后 `.github/workflows/ios.yml` 会在 `macos-15`（Xcode 16.4 / Swift 6.0）自动执行文案同步校验、`swift test`、模拟器测试并产出免签名真机包 Artifact **`LanTransfer-iOS-unsigned-ipa`**（`LanTransfer-1.0.0-unsigned.ipa`），可在 Windows 上通过 Sideloadly / AltStore 侧载到真机。
 
 ### 重新生成三端共享文案
 ```powershell

@@ -38,12 +38,19 @@ xcodebuild -project LanTransfer.xcodeproj \
   build
 ```
 
+### 2.4 无 macOS 云端构建与 Windows 侧载（GitHub Actions）
+推送 `ios/**`、`protocol/**` 或 `shared/**` 变更至 GitHub（或在 Actions 页面手动触发 `ios` workflow），`.github/workflows/ios.yml` 会在 `macos-15`（Xcode 16.4 / Swift 6.0）自动执行：
+1. 共享中文文案同步检查（`python3 shared/ui-text/generate.py`）
+2. `LanTransferCore` 全部单元测试（`swift test -v`，覆盖全部 10 份共享测试向量与 E2E 流程）
+3. `xcodegen generate` 与 iOS 模拟器测试（`LanTransferApp` + `LanTransferShareExtension` + `LanTransferAppTests`）
+4. 真机 Release 构建并上传免签名安装包 Artifact **`LanTransfer-iOS-unsigned-ipa`**（内含 `LanTransfer-1.0.0-unsigned.ipa`），可在 Windows 上通过 **Sideloadly** 或 **AltStore**（使用免费个人 Apple ID）侧载到 iPhone / iPad。
+
 ## 3. 签名与权限配置说明
 
 | Entitlements 文件 | 适用账号 | 能力说明 |
 | --- | --- | --- |
 | `LanTransferApp/LanTransferApp.entitlements`（默认） | 个人免费 Apple ID / Simulator / CI | 仅含 App Group（`group.com.lantransfer.app`）。未获批组播权限时，可通过**扫描二维码**与**手动输入 IPv4**与 Android / Windows 完整互通。 |
-| `LanTransferApp/LanTransferApp-Multicast.entitlements` | 付费 Apple Developer 账号（已获批 Multicast Networking） | 额外声明 `com.apple.developer.networking.multicast`，支持 UDP 组播 `239.255.42.58:42581` 与定向广播自动发现。启用时在 `project.yml` 将 `entitlements.path` 切换为此文件即可。 |
+| `LanTransferApp/LanTransferApp-Multicast.entitlements` | 付费 Apple Developer 账号（已获批 Multicast Networking） | 额外声明 `com.apple.developer.networking.multicast`，支持 UDP 组播 `239.255.42.58:42581` 与定向广播自动发现。启用时在 `project.yml` 将 `settings.base.CODE_SIGN_ENTITLEMENTS` 切换为此文件即可。 |
 
 > **App Store 出口合规提示**：本应用采用纯本地局域网点对点加密传输（`Noise_XX_25519_AESGCM_SHA256`），上架 TestFlight / App Store 时请按 Apple App Store Connect 最新加密合规流程如实声明，切勿硬编码豁免标记。
 

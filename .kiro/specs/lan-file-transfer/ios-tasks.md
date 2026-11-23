@@ -63,4 +63,5 @@
 - [x] **5.3** `QrShowSheet`（`CoreImage` 无插值 QR、亮度提升/恢复、截屏温和提醒）与 `QrScanView`（`AVFoundation` 全屏取景框、手电筒、3 s 误码防抖、权限引导）
 - [x] **5.4** `ManualConnectSheet`、`PairingSheet`（6 位超大等宽 SAS 确认弹窗）与 `IncomingOfferSheet`（并发 Offer 队列与文件清单）
 - [x] **5.5** `HistoryTabView`（原生 `.searchable`、三段筛选、左滑三选一删除确认、QuickLook / 文件 App 定位）与 `SettingsTabView`（主题切换、设备改名、后台说明、已信任设备自动接收与解除配对）
-- [ ] **5.6** macOS / Xcode 16+ 编译实测与真机三端联调（运行 `swift test`、`xcodebuild` 及 iOS ↔ Windows / Android 真机在 Wi-Fi 与手机热点下的全流程互通验证）
+- [x] **5.6** 云端 macOS / Xcode 16.4 / Swift 6.0 全量编译与测试通过（GitHub Actions `.github/workflows/ios.yml` 全部绿灯：共享文案同步校验、`LanTransferCore` 10 份跨端向量与 E2E 单元测试、`LanTransferApp` + `LanTransferShareExtension` + `LanTransferAppTests` 模拟器安装测试、真机 Release 免签名 `LanTransfer-1.0.0-unsigned.ipa` 构建）
+- [ ] **5.7** 真机三端联调（Windows Sideloadly / AltStore 侧载或 Xcode 真机运行，验证 iOS ↔ Windows / Android 在 Wi-Fi 与手机热点下的扫码/手动连接、无损文字、多文件与断点续传全流程互通，暂缓待后续安排）

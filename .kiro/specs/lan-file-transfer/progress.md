@@ -11,7 +11,7 @@
 | 1.3 Windows .NET 解决方案 | 已完成 | build + test 通过 |
 | 1.4 Kotlin 属性测试辅助与生成器 | 已完成 | |
 | 1.5 C# 属性测试辅助与生成器 | 已完成 | |
-| 1.6 CI 工作流骨架 | 已完成 | 未在 GitHub 上实际运行（本地不是 git 仓库）；Actions 按提交 SHA 锁定 |
+| 1.6 CI 工作流骨架 | 已完成 | 已在 GitHub Actions 实际跑通（`windows`、`ios` 全绿）；Actions 按提交 SHA 锁定 |
 | 2.1 协议规范 | 已完成 | `protocol/spec/lan-transfer-protocol.md`、`CHANGELOG.md` |
 | 2.2 测试向量格式与加载器 | 已完成 | `protocol/test-vectors/README.md`、`manifest.json`；两端 `TestVectors` 加载器 |
 | 3.1–3.8 协议层基础（两端）与 Property 1–4、6、7 | 已完成 | Bytes / Tlv / StrictUtf8 / Messages / MessageCodec / Frame |
@@ -35,7 +35,7 @@
 | 21–23 存储层、共享文案与统一设计令牌 | 已完成（不含 CI 校验脚本 21.3 / 23.4） | Windows SQLite / Android Room M2 全量建表与存储实现（Room schema 导出至 `android/app/schemas/`）；`shared/ui-text/zh-CN.tsv` + `generate.py` 生成双端文案；`shared/design-tokens.json` |
 | 25–31 平台适配层与双端现代 UI（Windows WPF + Android Compose M3） | 已完成 | Windows Fluent Win11 现代界面与 Android Material 3 现代界面全量实现，支持浅色 / 深色 / 跟随系统切换；编译与基础测试全部通过 |
 | 32–33 Windows 安装程序（Inno Setup 6） | 已完成 | `windows/installer/LanTransfer.iss`、`Languages/ChineseSimplified.isl` 与 `.github/workflows/installer.yml` 完成；Release 自包含发布并编译产出 `LanTransfer-Setup-1.0.0-win-x64.exe` |
-| iOS Wave 0–5 全量源码与单元测试（Swift 6 / SwiftUI / 零三方依赖） | 已完成代码实装（待 macOS/Xcode 编译联调） | 已完成 `LanTransferProtocol`（含 9 份协议测试向量测试）、`LanTransferDomain`（含 `filename-sanitizer.json` 向量与 3 个纯归约器）、`LanTransferEngine`（全部并发 actor 与内存 E2E 测试）、`LanTransferApp/Platform`（Network/Keychain/SQLite M2/Files/Clipboard/Notifier/Lifecycle/ShareExtension）及 9 大 SwiftUI 页面 + `LosslessTextView` 无损选区复制；65 个 Swift 文件通过全量静态审计，待 macOS / Xcode 16+ 或 GitHub Actions `macos-15` 执行编译与真机三端互通验证（任务 5.6） |
+| iOS Wave 0–5 全量源码、单元测试与云端 CI 构建（Swift 6 / SwiftUI / 零三方依赖） | 已完成编译与 CI 测试（待真机三端联调） | 已完成 `LanTransferProtocol`（含 9 份协议测试向量）、`LanTransferDomain`（含 `filename-sanitizer.json` 与 3 个纯归约器）、`LanTransferEngine`（全部并发 actor 与 E2E 测试）、`LanTransferApp/Platform`（Network/Keychain/SQLite M2/Files/Clipboard/Notifier/Lifecycle/ShareExtension）及 9 大 SwiftUI 页面 + `LosslessTextView`；GitHub Actions `macos-15`（Xcode 16.4 / Swift 6.0）全链路通过（文案校验、`swift test`、模拟器测试、免签名真机 `LanTransfer-1.0.0-unsigned.ipa` 产物），仅余任务 5.7 真机三端联调待后续安排 |
 | 22 / 34 / 35 互通测试、CI 门禁与性能基准 | 暂缓 | 按用户指示停止后续测试任务 |
 
 两端命名差异（C# 成员不能与类型同名等）：Kotlin `OutgoingText.text` ↔ C# `OutgoingText.Body`；Kotlin `TextItem.text` ↔ C# `TextItem.Body`；C# 的 `PairingSession` 各子类型自带 `Deadline`（基类只有 `Peer`、`Role`），`PairingEffect.CancelConnect` 等无字段 effect 是无参数 record；Kotlin `Text.text` ↔ C# `Text.Body`；Kotlin 用 `UInt` / `ULong` 表示 u32 / u64，C# 用 `uint` / `ulong`；Kotlin `QrPayload.ipv4List: List<Int>` ↔ C# `ValueList<uint>`；C# 中带列表字段的 record 用 `ValueList<T>` 保证值相等。
@@ -181,7 +181,7 @@
 - Android SDK（用户已同意 Google 许可）：`%LOCALAPPDATA%\Android\Sdk`，含 cmdline-tools 23.0（latest）、platform-tools 37.0.1、platforms/android-36、build-tools 35.0.0 与 36.0.0；`android/local.properties`（已在 .gitignore 中）写有 `sdk.dir`。新版 cmdline-tools 的 `sdkmanager` 已改为调用 Android CLI（`cmdline-tools\latest\bin\android.exe`），包名用 `/` 分隔：`android --no-metrics --sdk=<路径> sdk install platforms/android-36`。不要经 `sdkmanager.bat` 传 `platforms;android-36`：批处理会在 `;` 处拆开参数。辅助脚本 `.dev/sdk3.ps1 list|install <包...>`。
 - `.dev/*.ps1` 只写 ASCII（含注释）：Windows PowerShell 5.1 把无 BOM 的 UTF‑8 脚本按 GBK 读取，中文注释可能吞掉下一行代码（曾导致 `$log`、`$lp` 为空）。`gw.ps1` 的注释已改为英文。
 - 后台进程（control_pwsh_process）按“命令 + 目录”复用：启动时若返回 `isReused: true`，拿到的是上次同名命令的旧进程和旧输出。先 stop 该 terminalId，再重新 start。判断构建结果以 `.dev/*.log` 末尾的 `exit=` 为准。execute_pwsh 的 `cwd` 参数有时不生效（终端停在上次的目录，如 `windows\`），脚本路径用绝对路径 `d:\phone-windows-file\.dev\xxx.ps1` 更稳妥。后台进程的状态显示 running 也可能根本没有启动（日志一直不更新）：用 `.dev\ps.ps1`（列出 java / powershell 进程命令行与 gw.log 修改时间，写入 `.dev\ps.log`）确认，没有对应进程时 stop 后重新 start。`wait.ps1` 只认日志中的 `exit=`，日志还是上一次的内容时会立即返回，启动新构建后先确认日志已被重写。
-- 仓库目录还不是 git 仓库（未执行 `git init`）。
+- 仓库已初始化 Git 并推送至 GitHub `origin/main`（已启用 GitHub Actions 云端验证）。
 
 ## 1.2 Android 工程要点
 
@@ -227,3 +227,36 @@
 - Windows 端：`LanTransfer.Platform.Windows`（SQLite / DPAPI / Win32 剪贴板 / Shell 定位 / 防火墙 / 单实例 / 通知）+ `LanTransfer.App`（Fluent Win11 主题、DWM 原生暗色标题栏、托盘与全套自定义中文对话框）+ Inno Setup 6 安装程序（`windows/installer/LanTransfer.iss`、`Languages/ChineseSimplified.isl`，产出 `LanTransfer-Setup-1.0.0-win-x64.exe`）；全解决方案 11 个项目 **0 警告 / 0 错误**，测试 **315/315 通过**，Windows 与 Android 端实机运行良好。
 - Android 端：Room M2（导出 `android/app/schemas/.../1.json`）+ Keystore / DataStore + Wi-Fi/热点网络绑定 + MediaStore/SAF + 前台服务 + CameraX/ZXing 扫码 + Material 3 Compose UI；`:core:*:test`、`:app:assembleDebug`、`:app:testDebugUnitTest`、`:app:lintDebug` **全部通过（0 编译警告 / 0 Lint 错误）**。
 - iOS 预适配：`DeviceType.IOS(3)`、`FsProfile.IOS`、默认名 `"iOS 设备"`、`announcements.json` 向量、双端 iOS 徽章及 `docs/ios-architecture-and-ui-guide.md`。
+
+## 2026-11-23 阶段汇总（iOS 全量开发完成、GitHub Actions 云端编译测试全绿与 Windows 竞态修复）
+
+### 里程碑成果
+1. **iOS 端 Wave 0–5 全量交付（零第三方依赖 / Swift 6.0 / SwiftUI / iOS 17+）**
+   - 架构与交互资产：`docs/ios-architecture-and-ui-guide.md`、`docs/ios-ui-design-spec.md`、`docs/ios-ui-preview.html`（离线交互式 iPhone 16 Pro 原型）、`shared/design-tokens.json`、`shared/ui-text/zh-CN.tsv`（220 条简体中文文案同步至 `Localizable.strings` 与 `UiText.g.swift`）。
+   - `LanTransferCore` SwiftPM 核心包（支持 `iOS 17+` 与 `macOS 14+`）：
+     - `LanTransferProtocol`：TLV、Strict UTF-8、帧与 25 种消息编解码、UDP `LTDA` 公告、前导协商、`LT1:` Base32 二维码、纯 Apple `CryptoKit` `Noise_XX_25519_AESGCM_SHA256` 与加密记录层、6 位 SAS；**全部 9 份共享协议测试向量在 Xcode 16.4 / Swift 6.0 下通过**。
+     - `LanTransferDomain`：`FsProfile.ios` 文件名清洗（通过 `filename-sanitizer.json` 向量）、显示名称与局域网子网规则、兼容 `UITextView` UTF-16 选区还原的 `TextDisplayMapper`、进度计算、`DeviceListReducer` 及 `PairingReducer` / `TextReducer` / `TransferReducer`。
+     - `LanTransferEngine` & `LanTransferTesting`：`LocalNetworkGuard`、`Handshake`、`Connection`、`SessionManager`、`DiscoveryService`、`PairingService`、`TextService`、`FileTransferEngine`、`EngineHost` 及全内存 E2E 测试（二维码配对 → 无损文字 → 150 KiB 多分片 SHA-256 文件传输）。
+   - `LanTransferApp` & `LanTransferShareExtension`：
+     - 原生平台适配层：`IosNetworkMonitor`（`getifaddrs` + `NWPathMonitor`）、`IosTransport`（`NWConnection` / `NWListener` + BSD UDP 降级）、`KeychainIdentityStore`、`SqliteDatabase`（原生 `libsqlite3` + WAL + M2 6 表 `Schema.sql`）、`UserDefaultsSettingsStore`、`IosReceiveStorage` / `IosSourceFiles`（`Documents/LanTransfer` 暴露至“文件”App、临时 `.part` 隔离于 `Library/Caches/lantransfer-tmp`）、`IosClipboard`（读回校验）、`IosFileLocator`（QuickLook + `shareddocuments://`）、`IosNotifier`、`IosAppLifecycle`（`isIdleTimerDisabled` + `beginBackgroundTask`）与系统分享扩展 `ShareViewController`。
+     - 9 大 SwiftUI 页面：`DevicesTabView`、`ConversationView`（含 `LosslessTextView` 覆写 `UITextView.copy(_:)`、`PhotosPicker`、`fileImporter`）、`QrShowSheet`、`QrScanView`、`ManualConnectSheet`、`PairingSheet`、`IncomingOfferSheet`、`HistoryTabView`、`SettingsTabView`。
+2. **GitHub Actions 云端 CI 全量通过（无本地 macOS 闭环）**
+   - `.github/workflows/ios.yml` 在 `macos-15`（Xcode 16.4 / Swift 6.0）全部绿灯：文案同步校验 → `swift test -v` → `xcodegen generate` → 模拟器编译/安装/运行 `LanTransferAppTests` → 真机 Release 编译并上传免签名安装包 Artifact **`LanTransfer-iOS-unsigned-ipa`**（`LanTransfer-1.0.0-unsigned.ipa`）。
+   - Windows CI（`windows.yml`）全解决方案 Release 编译 **0 警告 / 0 错误**、测试 **315 / 315 全部通过**。
+
+### 关键修复记录（提交 `009da2f`..`806e4e0`）
+- **Windows 引擎关闭竞态修复**（`windows/src/LanTransfer.Engine/SessionManager.cs`）：`Connection._closed` 使用 `RunContinuationsAsynchronously` 导致 `ShutdownAsync` / `CloseAsync` 可能早于 `AfterRegister` 注销回调返回（偶发触发 `EngineHostTests.Shutdown_stops_all_and_restart_reuses_identity` 失败）。新增 `Session.Unregistered` 与 `Live.Removed` 完成信号并统一等待，本地 Release 136/136 与连续 20 次压力回归全部通过。
+- **Swift 6.0 严格并发与 SE-0414 隔离适配**：
+  - 消除所有嵌套弱引用捕获、`&& await` / `XCTUnwrap(await ...)` 自动闭包报错及 `MainActor.run` 异步闭包误用。
+  - 将持有非 `Sendable` 底层 C/SDK 句柄的平台适配类（`SqliteDatabase`、`IosNetworkMonitor`、`NwTcpListener`、`IosFiles`、`UserDefaultsSettingsStore`）统一改为 `NSLock` 保护的 `@unchecked Sendable` 类，彻底规避 SE-0414 跨 actor 区域隔离冲突并避免阻塞 Swift 协作线程池。
+  - `QrCameraPreview` 拆分 `CameraSessionBox` 并补齐 `Coordinator: @unchecked Sendable`；`ConversationView` 使用 `PhotoItemBox` 隔离非 `Sendable` `PhotosPickerItem`，并在 `PhotosPicker` 非隔离 `label` 内直接使用 SwiftUI `Label`。
+  - `QrShowSheet` / `QrScanView` 拆分长视图体解决 Swift 类型检查超时，并补齐 `import Combine`。
+- **共享文案生成器与 XcodeGen 配置修复**：
+  - `shared/ui-text/generate.py` 将 Swift 查找辅助函数 `get(_:)` 重命名为 `lookup(_:)`，避免 Swift 6 将属性体内的 `get(...)` 误解析为 getter 关键字。
+  - `SqliteDatabase.swift` 将未导入的位运算 C 宏 `SQLITE_CONSTRAINT_UNIQUE` 改为 `(rc & 0xFF) == SQLITE_CONSTRAINT`。
+  - `ios/project.yml` 改用 `INFOPLIST_FILE` + `GENERATE_INFOPLIST_FILE: NO` + `CODE_SIGN_ENTITLEMENTS`（替换会自动覆写文件的 `info:` / `entitlements:` 生成块），完整保留 Share Extension 的 `NSExtension` 字典与主 App 权限配置，并补齐 `LanTransferAppTests` 的 `TEST_HOST` 与核心包依赖。
+
+### 下一阶段待办（暂缓，待安排测试时推进）
+1. **iOS 真机侧载与三端互通实测（任务 5.7）**：从 GitHub Actions 下载 `LanTransfer-1.0.0-unsigned.ipa`，在 Windows 上通过 Sideloadly / AltStore 侧载到 iPhone / iPad，在 Wi-Fi 与手机热点下验证 iOS ↔ Windows / Android 扫码配对、手动连接、无损文字、多文件与断点续传。
+2. **可选 CI 优化**：为 `android-instrumented.yml`、`android-jvm.yml`、`windows.yml` 补充 `paths` 路径过滤，避免单端修改重复触发全平台模拟器矩阵。
+3. **跨端自动化互通测试（任务 22 / 34 / 35）**：按需推进 `interop-tests/` 自动化场景与性能基准。

@@ -117,7 +117,7 @@ flowchart TD
 | **UDP 发现** | `NWMulticastGroup` 或 BSD `socket(AF_INET, SOCK_DGRAM)` + `SO_REUSEADDR`/`SO_REUSEPORT`/`SO_BROADCAST`/`IP_ADD_MEMBERSHIP` | 端口 `42581`、组播组 `239.255.42.58`。若用户拒绝“本地网络”权限或未签 `com.apple.developer.networking.multicast` 权限，安全降级为 `DiscoveryStatus.unavailable`，横幅提示用户仍可通过 **扫码** 或 **手动输入 IP** 正常连接与传输。 |
 
 > **Apple Multicast Entitlement 说明**：
-> - 正式上架 / 企业分发 / 付费 Apple Developer 账号在 Apple Developer Portal 获批 `com.apple.developer.networking.multicast` 后，在 `ios/project.yml` 将 `entitlements.path` 切换为 `LanTransferApp/LanTransferApp-Multicast.entitlements`，即可启用完整 UDP 广播/组播自动发现能力。
+> - 正式上架 / 企业分发 / 付费 Apple Developer 账号在 Apple Developer Portal 获批 `com.apple.developer.networking.multicast` 后，在 `ios/project.yml` 将 `settings.base.CODE_SIGN_ENTITLEMENTS` 切换为 `LanTransferApp/LanTransferApp-Multicast.entitlements`，即可启用完整 UDP 广播/组播自动发现能力。（注意：`project.yml` 统一使用 `INFOPLIST_FILE` + `GENERATE_INFOPLIST_FILE: NO` + `CODE_SIGN_ENTITLEMENTS` 指向仓库手写文件，切勿使用无 `properties` 的 XcodeGen `info:` / `entitlements:` 生成块，以免覆盖 `NSExtension` 与权限声明。）
 > - 个人免费开发账号（Personal Team）/ Simulator / CI 默认使用 `LanTransferApp/LanTransferApp.entitlements`（仅声明 App Group，不含组播权限）；此时单播 TCP（扫码配对、手动 IP、已信任设备直连）100% 正常工作，自动发现优雅降级并给出清晰中文提示。
 
 ### 4.2 身份密钥与 SQLite M2 存储（`Platform/Security/` & `Platform/Storage/`）
@@ -126,7 +126,8 @@ flowchart TD
   - 访问属性固定 `kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly` 且 `kSecAttrSynchronizable = kCFBooleanFalse`（**严禁同步到 iCloud 钥匙串**，满足需求 4.1 卸载/换机不跨机复用身份）。
   - 载荷为 80 字节 `device_id(16) || private_key(32) || public_key(32)`，加载时重算 X25519 公钥自检，损坏则返回 `IdentityLoad.resetCorrupted`。
 - **SQLite 数据库（`SqliteDatabase`）**：
-  - 位置：App Group 共享容器 `Library/Application Support/LanTransfer/lantransfer.db`（使 Share Extension 可只读查询 `trusted_device` 列表）。
+  - 并发模型：使用 iOS 原生 `libsqlite3` + `NSLock` 保护的 `@unchecked Sendable` 类（与 `IosFiles` / `IosNetworkMonitor` / `NwTcpListener` 等非 `Sendable` 底层 C/SDK 句柄适配层一致，避免阻塞 Swift 并发协作线程池及 SE-0414 跨 actor 区域隔离冲突）。
+  - 位置：App Group 共享容器 `LanTransfer/lantransfer.db`（无 App Group 权限时自动回退至 `Application Support/LanTransfer/lantransfer.db`；Share Extension 通过只读连接快照查询 `trusted_device` 列表）。
   - 表结构：直接复用与 Windows / Android 完全一致的 M2 6 张表（`schema_meta`、`trusted_device`、`text_message`、`transfer_task`、`transfer_file`、`pending_cancel`），WAL 模式，`PRAGMA user_version = 1`，检测到更高版本时拒绝降级并弹窗提示更新，绝不删库。
 
 ### 4.3 文件接收、相册 / 文件选择与打开（`Platform/Files/`）
