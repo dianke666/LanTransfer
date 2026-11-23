@@ -101,3 +101,5 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.lantransfer.app.tests
         GENERATE_INFOPLIST_FILE: YES
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/LanTransfer.app/LanTransfer"
+        BUNDLE_LOADER: "$(TEST_HOST)"
