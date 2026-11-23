@@ -30,10 +30,6 @@ targets:
         excludes:
           - "**/*.entitlements"
           - "Info.plist"
-    info:
-      path: LanTransferApp/Info.plist
-    entitlements:
-      path: LanTransferApp/LanTransferApp.entitlements
     dependencies:
       - package: LanTransferCore
         product: LanTransferProtocol
@@ -48,6 +44,9 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.lantransfer.app
         PRODUCT_NAME: LanTransfer
         PRODUCT_MODULE_NAME: LanTransferApp
+        INFOPLIST_FILE: LanTransferApp/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+        CODE_SIGN_ENTITLEMENTS: LanTransferApp/LanTransferApp.entitlements
         TARGETED_DEVICE_FAMILY: "1,2"
         SUPPORTS_MACCATALYST: NO
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
@@ -69,10 +68,6 @@ targets:
       - path: LanTransferApp/Platform/AppGroupConfig.swift
       - path: LanTransferApp/Platform/Storage/SqliteDatabase.swift
       - path: LanTransferApp/Resources/zh-Hans.lproj
-    info:
-      path: LanTransferShareExtension/Info.plist
-    entitlements:
-      path: LanTransferShareExtension/LanTransferShareExtension.entitlements
     dependencies:
       - package: LanTransferCore
         product: LanTransferProtocol
@@ -84,6 +79,9 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.lantransfer.app.share
         PRODUCT_NAME: LanTransferShareExtension
+        INFOPLIST_FILE: LanTransferShareExtension/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+        CODE_SIGN_ENTITLEMENTS: LanTransferShareExtension/LanTransferShareExtension.entitlements
         TARGETED_DEVICE_FAMILY: "1,2"
         SKIP_INSTALL: YES
         APPLICATION_EXTENSION_API_ONLY: YES
