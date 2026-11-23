@@ -137,10 +137,11 @@ public final class AppController {
         started = true
         Task {
             await notifier.requestAuthorizationIfNeeded()
-            await lifecycle.setExpirationHandler { [weak self] in
-                guard let self else { return }
-                await self.engine.stopNetworking(reason: .background)
-                await self.notifier.notifyBackgroundPaused()
+            let engine = self.engine
+            let notifier = self.notifier
+            await lifecycle.setExpirationHandler {
+                await engine.stopNetworking(reason: .background)
+                await notifier.notifyBackgroundPaused()
             }
             await networkMonitor.start()
             await engine.start()

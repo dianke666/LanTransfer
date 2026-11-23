@@ -222,7 +222,7 @@ public actor SqliteDatabase: TrustStore, HistoryStore, TaskStore {
         sqlite3_bind_int(stmt, 10, Int32(record.status.rawValue))
 
         let rc = sqlite3_step(stmt)
-        if rc == SQLITE_CONSTRAINT || rc == SQLITE_CONSTRAINT_UNIQUE {
+        if (rc & 0xFF) == SQLITE_CONSTRAINT {
             _ = exec(db, "ROLLBACK;")
             return .duplicate
         }

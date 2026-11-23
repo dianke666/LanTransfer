@@ -72,10 +72,13 @@ public final class IosFileLocator: FileLocator, @unchecked Sendable {
         let rawPath = directoryURL.absoluteString
         let filesScheme = rawPath.replacingOccurrences(of: "file://", with: "shareddocuments://")
         guard let targetURL = URL(string: filesScheme) else { return .noFileManager }
-        let opened = await MainActor.run { () async -> Bool in
-            await UIApplication.shared.open(targetURL)
-        }
+        let opened = await openURLOnMain(targetURL)
         return opened ? .ok : .noFileManager
+    }
+
+    @MainActor
+    private func openURLOnMain(_ url: URL) async -> Bool {
+        await UIApplication.shared.open(url)
     }
 }
 

@@ -7,7 +7,7 @@ import UIKit
 import UniformTypeIdentifiers
 
 /// 支持流式零内存拷贝导出系统相册原图/原视频的 Transferable 包装。
-private struct StagedPhotoFile: Transferable {
+private struct StagedPhotoFile: Transferable, Sendable {
     let url: URL
 
     static var transferRepresentation: some TransferRepresentation {
