@@ -8,6 +8,8 @@ namespace LanTransfer.Engine;
 /// <summary>已注册的 Session：与一个对端设备之间唯一的已认证连接（C1.11）。</summary>
 public sealed class Session
 {
+    private readonly TaskCompletionSource _unregistered = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
     internal Session(PeerIdentity peer, DeviceId initiator, Connection connection, LocalInterface? via, bool initiatedLocally)
     {
         Peer = peer;
@@ -29,6 +31,8 @@ public sealed class Session
 
     internal Connection Connection { get; }
 
+    internal Task Unregistered => _unregistered.Task;
+
     public SessionInfo Info => new(Peer, Connection.Remote, InitiatedLocally, Connection.Version);
 
     /// <summary>应用消息（单一消费者，通常是 EngineHost 的分发器）；Session 关闭后通道完成。</summary>
@@ -45,6 +49,8 @@ public sealed class Session
     public ChunkSourceHandle AttachChunkSource(IChunkSource src) => Connection.AttachChunkSource(src);
 
     public override string ToString() => $"Session({Peer.DeviceId}, initiator={Initiator})";
+
+    internal void MarkUnregistered() => _unregistered.TrySetResult();
 }
 
 /// <summary>握手完成、intent 为 PAIR / QR_PAIR 的连接（Pending），由 PairingService 驱动。</summary>
@@ -165,7 +171,7 @@ public sealed class SessionManager : IDisposable
     }
 
     /// <summary>一条存活的连接及其本地地址（接口消失检测用）。</summary>
-    private sealed record Live(Connection Connection, Ipv4 LocalIp);
+    private sealed record Live(Connection Connection, Ipv4 LocalIp, Task Removed);
 
     public IObservableState<ValueMap<DeviceId, SessionInfo>> Sessions => _sessions;
 
@@ -244,18 +250,25 @@ public sealed class SessionManager : IDisposable
     {
         _listener?.Close();
         _listener = null;
-        List<Connection> all;
+        List<Live> all;
+        List<Session> sessions;
         lock (_gate)
         {
-            all = [.. _live.Select(l => l.Connection)];
+            all = [.. _live];
+            sessions = [.. _registered.Values];
         }
 
-        foreach (var c in all)
+        foreach (var l in all)
         {
-            c.SendAndClose(new SessionClose(reason), new CloseReason.Local(reason));
+            l.Connection.SendAndClose(new SessionClose(reason), new CloseReason.Local(reason));
         }
 
-        await Task.WhenAll(all.Select(c => c.Closed)).ConfigureAwait(false);
+        foreach (var s in sessions)
+        {
+            s.Connection.SendAndClose(new SessionClose(reason), new CloseReason.Local(reason));
+        }
+
+        await Task.WhenAll([.. all.Select(l => l.Removed), .. sessions.Select(s => s.Unregistered)]).ConfigureAwait(false);
     }
 
     /// <summary>主动关闭与 <paramref name="peer"/> 的 Session（先发 SESSION_CLOSE）。</summary>
@@ -264,6 +277,7 @@ public sealed class SessionManager : IDisposable
         if (GetSession(peer) is { } s)
         {
             await s.Connection.CloseGracefullyAsync(reason).ConfigureAwait(false);
+            await s.Unregistered.ConfigureAwait(false);
         }
     }
 
@@ -427,24 +441,31 @@ public sealed class SessionManager : IDisposable
         _ = s.Closed.ContinueWith(
             t =>
             {
-                bool anyLeft;
-                lock (_gate)
+                try
                 {
-                    if (_registered.TryGetValue(s.Peer.DeviceId, out var cur) && ReferenceEquals(cur, s))
+                    bool anyLeft;
+                    lock (_gate)
                     {
-                        _registered.Remove(s.Peer.DeviceId);
-                        PublishLocked();
+                        if (_registered.TryGetValue(s.Peer.DeviceId, out var cur) && ReferenceEquals(cur, s))
+                        {
+                            _registered.Remove(s.Peer.DeviceId);
+                            PublishLocked();
+                        }
+
+                        anyLeft = _registered.Count > 0;
                     }
 
-                    anyLeft = _registered.Count > 0;
-                }
+                    if (!anyLeft)
+                    {
+                        _network.SetFastPolling(false);
+                    }
 
-                if (!anyLeft)
+                    _events.OnNext(new SessionEvent.Closed(s, t.Result));
+                }
+                finally
                 {
-                    _network.SetFastPolling(false);
+                    s.MarkUnregistered();
                 }
-
-                _events.OnNext(new SessionEvent.Closed(s, t.Result));
             },
             CancellationToken.None,
             TaskContinuationOptions.ExecuteSynchronously,
@@ -475,7 +496,8 @@ public sealed class SessionManager : IDisposable
     private Connection NewConnection(ITcpConn conn, HandshakeOutcome.Done done, Role role)
     {
         var c = new Connection(conn, done.Reader, role, done.Version, done.Send, done.Receive, _clock, _timings);
-        var entry = new Live(c, conn.Local.Ip);
+        var removed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var entry = new Live(c, conn.Local.Ip, removed.Task);
         lock (_gate)
         {
             _live.Add(entry);
@@ -484,9 +506,16 @@ public sealed class SessionManager : IDisposable
         _ = c.Closed.ContinueWith(
             _ =>
             {
-                lock (_gate)
+                try
                 {
-                    _live.Remove(entry);
+                    lock (_gate)
+                    {
+                        _live.Remove(entry);
+                    }
+                }
+                finally
+                {
+                    removed.TrySetResult();
                 }
             },
             CancellationToken.None,

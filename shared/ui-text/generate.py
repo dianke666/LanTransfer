@@ -221,12 +221,12 @@ def generate_ios(entries: list[dict[str, str]]) -> None:
         "",
         '    private static let zhHansLocale = Locale(identifier: "zh-Hans-CN")',
         "",
-        "    private static func get(_ key: String) -> String {",
+        "    private static func lookup(_ key: String) -> String {",
         '        zhHansBundle.localizedString(forKey: key, value: key, table: "Localizable")',
         "    }",
         "",
         "    private static func format(_ key: String, _ args: [CVarArg]) -> String {",
-        "        String(format: get(key), locale: zhHansLocale, arguments: args)",
+        "        String(format: lookup(key), locale: zhHansLocale, arguments: args)",
         "    }",
         "",
     ]
@@ -235,7 +235,7 @@ def generate_ios(entries: list[dict[str, str]]) -> None:
         prop_name = to_camel(key)
         _, names = ios_format(row["text"])
         if not names:
-            swift_lines.append(f'    public static var {prop_name}: String {{ get("{key}") }}')
+            swift_lines.append(f'    public static var {prop_name}: String {{ lookup("{key}") }}')
         else:
             params = ", ".join(f"{n}: Any" for n in names)
             args = ", ".join(f"String(describing: {n}) as NSString" for n in names)
