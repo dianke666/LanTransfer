@@ -94,10 +94,8 @@ public actor IosReceiveStorage: ReceiveStorage {
             if !FileManager.default.fileExists(atPath: url.path) {
                 FileManager.default.createFile(atPath: url.path, contents: nil)
             }
-            let handle = try FileHandle(forWritingTo: url)
-            try handle.truncate(atOffset: UInt64(max(offset, 0)))
-            try handle.seekToEnd()
-            return .success(FileHandleTempWriter(handle: handle))
+            let writer = try FileHandleTempWriter(url: url, offset: offset)
+            return .success(writer)
         } catch {
             return .failure(IoError(error.localizedDescription))
         }
@@ -106,8 +104,8 @@ public actor IosReceiveStorage: ReceiveStorage {
     public func openTempForRead(_ ref: TempRef) -> Result<any ChunkReader, IoError> {
         let url = URL(fileURLWithPath: ref.value)
         do {
-            let handle = try FileHandle(forReadingFrom: url)
-            return .success(FileHandleChunkReader(handle: handle, scopedURL: nil))
+            let reader = try FileHandleChunkReader(url: url, offset: 0, securityScoped: false)
+            return .success(reader)
         } catch {
             return .failure(IoError(error.localizedDescription))
         }
@@ -217,15 +215,10 @@ public actor IosSourceFiles: SourceFiles {
 
     public func openForRead(_ ref: SourceRef, offset: Int64) -> Result<any ChunkReader, IoError> {
         let url = resolveURL(ref.value)
-        let accessed = url.startAccessingSecurityScopedResource()
         do {
-            let handle = try FileHandle(forReadingFrom: url)
-            if offset > 0 {
-                try handle.seek(toOffset: UInt64(offset))
-            }
-            return .success(FileHandleChunkReader(handle: handle, scopedURL: accessed ? url : nil))
+            let reader = try FileHandleChunkReader(url: url, offset: offset, securityScoped: true)
+            return .success(reader)
         } catch {
-            if accessed { url.stopAccessingSecurityScopedResource() }
             return .failure(IoError(error.localizedDescription))
         }
     }
@@ -242,8 +235,11 @@ private actor FileHandleTempWriter: TempWriter {
     private let handle: FileHandle
     private var closed = false
 
-    init(handle: FileHandle) {
-        self.handle = handle
+    init(url: URL, offset: Int64) throws {
+        let h = try FileHandle(forWritingTo: url)
+        try h.truncate(atOffset: UInt64(max(offset, 0)))
+        try h.seekToEnd()
+        self.handle = h
     }
 
     func write(_ data: Data) -> IoResult {
@@ -278,9 +274,19 @@ private actor FileHandleChunkReader: ChunkReader {
     private let scopedURL: URL?
     private var closed = false
 
-    init(handle: FileHandle, scopedURL: URL?) {
-        self.handle = handle
-        self.scopedURL = scopedURL
+    init(url: URL, offset: Int64, securityScoped: Bool) throws {
+        let accessed = securityScoped ? url.startAccessingSecurityScopedResource() : false
+        do {
+            let h = try FileHandle(forReadingFrom: url)
+            if offset > 0 {
+                try h.seek(toOffset: UInt64(offset))
+            }
+            self.handle = h
+            self.scopedURL = accessed ? url : nil
+        } catch {
+            if accessed { url.stopAccessingSecurityScopedResource() }
+            throw error
+        }
     }
 
     func read(maxBytes: Int) -> Result<Data?, IoError> {

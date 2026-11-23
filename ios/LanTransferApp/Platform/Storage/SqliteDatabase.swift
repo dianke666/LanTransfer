@@ -6,23 +6,23 @@ import SQLite3
 
 private let sqliteTransient = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
 
+private final class SqliteHandle: @unchecked Sendable {
+    let ptr: OpaquePointer
+    init(_ ptr: OpaquePointer) { self.ptr = ptr }
+    deinit { sqlite3_close(ptr) }
+}
+
 /// 原生 libsqlite3 M2 持久化引擎（零第三方依赖，WAL 模式，与 Android Room / Windows SQLite 共用相同 6 表 Schema）。
 public actor SqliteDatabase: TrustStore, HistoryStore, TaskStore {
     private static let currentSchemaVersion: Int32 = 1
     private static let nextHistorySeqKey = "next_history_seq"
 
     private let dbURL: URL
-    private var db: OpaquePointer?
+    private var dbHandle: SqliteHandle?
     private var openError: String?
 
     public init(url: URL = AppGroupConfig.databaseURL()) {
         self.dbURL = url
-    }
-
-    deinit {
-        if let db {
-            sqlite3_close(db)
-        }
     }
 
     /// 供 Share Extension 只读查询已信任设备列表，避免与主 App 争用写锁。
@@ -40,7 +40,7 @@ public actor SqliteDatabase: TrustStore, HistoryStore, TaskStore {
     }
 
     private func ensureOpen() -> OpaquePointer? {
-        if let db { return db }
+        if let dbHandle { return dbHandle.ptr }
         try? FileManager.default.createDirectory(at: dbURL.deletingLastPathComponent(), withIntermediateDirectories: true)
         var handle: OpaquePointer?
         let flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX
@@ -71,7 +71,7 @@ public actor SqliteDatabase: TrustStore, HistoryStore, TaskStore {
             _ = exec(conn, "PRAGMA user_version = \(Self.currentSchemaVersion);")
         }
         _ = exec(conn, "INSERT OR IGNORE INTO schema_meta (key, value) VALUES ('\(Self.nextHistorySeqKey)', 1);")
-        self.db = conn
+        self.dbHandle = SqliteHandle(conn)
         self.openError = nil
         return conn
     }

@@ -426,9 +426,12 @@ public actor EngineHost {
     private func handleInterfacesChanged(_ interfaces: [LocalInterface]) async {
         await discoveryService.updateInterfaces(interfaces)
         if networkingRunning, let port = await sessionManager.listeningPort {
-            if !interfaces.isEmpty && (await discoveryService.currentStatus()) == .stopped {
-                await discoveryService.start(listenPort: port)
-            } else if interfaces.isEmpty {
+            if !interfaces.isEmpty {
+                let currentStatus = await discoveryService.currentStatus()
+                if currentStatus == .stopped {
+                    await discoveryService.start(listenPort: port)
+                }
+            } else {
                 await discoveryService.stop()
             }
         }

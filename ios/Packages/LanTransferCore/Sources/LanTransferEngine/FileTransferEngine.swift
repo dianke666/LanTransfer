@@ -201,7 +201,13 @@ public actor FileTransferEngine {
         guard tasks[transferId] != nil else { return }
         if accept {
             let dir = await settingsStore.current().receiveDir
-            let usable = await receiveStorage.probe(dir) == .usable && await receiveStorage.ensureDirectory(dir)
+            let probeStatus = await receiveStorage.probe(dir)
+            let usable: Bool
+            if probeStatus == .usable {
+                usable = await receiveStorage.ensureDirectory(dir)
+            } else {
+                usable = false
+            }
             await apply(transferId: transferId, event: .userAccepted(dir: dir, dirUsable: usable))
         } else {
             await apply(transferId: transferId, event: .userRejected)
