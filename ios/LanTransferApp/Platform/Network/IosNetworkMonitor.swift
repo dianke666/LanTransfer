@@ -26,7 +26,8 @@ public actor IosNetworkMonitor: NetworkMonitor {
     public func start() {
         refreshNow()
         pathMonitor.pathUpdateHandler = { [weak self] _ in
-            Task { await self?.refreshNow() }
+            guard let monitor = self else { return }
+            Task { await monitor.refreshNow() }
         }
         pathMonitor.start(queue: monitorQueue)
 

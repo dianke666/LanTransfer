@@ -185,7 +185,8 @@ public actor IosAppLifecycle: AppLifecycle {
         await endBackgroundTaskIfNeeded()
         let taskId = await MainActor.run { () -> UIBackgroundTaskIdentifier in
             UIApplication.shared.beginBackgroundTask(withName: "LanTransferActive") { [weak self] in
-                Task { await self?.handleBackgroundExpired() }
+                guard let lifecycle = self else { return }
+                Task { await lifecycle.handleBackgroundExpired() }
             }
         }
         bgTaskId = taskId

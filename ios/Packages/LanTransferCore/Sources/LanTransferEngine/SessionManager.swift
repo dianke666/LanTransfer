@@ -107,7 +107,8 @@ public actor SessionManager {
         acceptTask = Task { [weak self] in
             while !Task.isCancelled {
                 guard let conn = await tcpListener.accept() else { break }
-                Task { await self?.handleInbound(conn) }
+                guard let manager = self else { break }
+                Task { await manager.handleInbound(conn) }
             }
         }
         return tcpListener.port
@@ -399,7 +400,8 @@ public actor SessionManager {
         await networkMonitor.setFastPolling(true)
 
         await session.connection.onClose { [weak self] reason in
-            Task { await self?.handleSessionClosed(peerId: peerId, conn: session.connection, reason: reason) }
+            guard let manager = self else { return }
+            Task { await manager.handleSessionClosed(peerId: peerId, conn: session.connection, reason: reason) }
         }
 
         let handler = self.onInboundMessage

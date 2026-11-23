@@ -158,7 +158,8 @@ public actor EngineHost {
         let (stream, continuation) = AsyncStream<EngineSnapshot>.makeStream()
         snapshotObservers[id] = continuation
         continuation.onTermination = { [weak self] _ in
-            Task { await self?.removeSnapshotObserver(id) }
+            guard let host = self else { return }
+            Task { await host.removeSnapshotObserver(id) }
         }
         Task {
             let snap = await self.snapshot()
@@ -172,7 +173,8 @@ public actor EngineHost {
         let (stream, continuation) = AsyncStream<EngineNotice>.makeStream()
         noticeObservers[id] = continuation
         continuation.onTermination = { [weak self] _ in
-            Task { await self?.removeNoticeObserver(id) }
+            guard let host = self else { return }
+            Task { await host.removeNoticeObserver(id) }
         }
         return stream
     }

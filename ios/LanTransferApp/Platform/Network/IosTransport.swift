@@ -27,51 +27,46 @@ public final class IosTransport: Transport, @unchecked Sendable {
         params.requiredLocalEndpoint = .hostPort(host: .ipv4(localIp), port: .any)
         params.allowLocalEndpointReuse = true
 
-        let connection = NWConnection(host: .ipv4(remoteIp), port: nwPort, using: params)
+        let connBox = UncheckedBox(NWConnection(host: .ipv4(remoteIp), port: nwPort, using: params))
         let stateBox = ConnectStateBox()
 
         return await withCheckedContinuation { continuation in
-            let timeoutItem = DispatchWorkItem {
+            self.queue.asyncAfter(deadline: .now() + timeoutSeconds) {
                 if stateBox.finish() {
-                    connection.cancel()
+                    connBox.value.cancel()
                     continuation.resume(returning: .timeout)
                 }
             }
-            self.queue.asyncAfter(deadline: .now() + timeoutSeconds, execute: timeoutItem)
 
-            connection.stateUpdateHandler = { state in
+            connBox.value.stateUpdateHandler = { state in
                 switch state {
                 case .ready:
                     if stateBox.finish() {
-                        timeoutItem.cancel()
-                        let localAddr = Self.extractLocalAddr(connection, fallback: via.address)
+                        let localAddr = Self.extractLocalAddr(connBox.value, fallback: via.address)
                         let remoteAddr = SocketAddr(ip: ip, port: port)
-                        continuation.resume(returning: .ok(NwTcpConn(connection: connection, local: localAddr, remote: remoteAddr)))
+                        continuation.resume(returning: .ok(NwTcpConn(connection: connBox.value, local: localAddr, remote: remoteAddr)))
                     }
                 case .failed(let error):
                     if stateBox.finish() {
-                        timeoutItem.cancel()
-                        connection.cancel()
+                        connBox.value.cancel()
                         continuation.resume(returning: Self.mapConnectError(error))
                     }
                 case .waiting(let error):
                     if case .posix(let code) = error, code == .ECONNREFUSED {
                         if stateBox.finish() {
-                            timeoutItem.cancel()
-                            connection.cancel()
+                            connBox.value.cancel()
                             continuation.resume(returning: .refused)
                         }
                     }
                 case .cancelled:
                     if stateBox.finish() {
-                        timeoutItem.cancel()
                         continuation.resume(returning: .unreachable)
                     }
                 default:
                     break
                 }
             }
-            connection.start(queue: self.queue)
+            connBox.value.start(queue: self.queue)
         }
     }
 
@@ -92,7 +87,7 @@ public final class IosTransport: Transport, @unchecked Sendable {
                 } else {
                     continue
                 }
-                if let started = await NwTcpListener.start(listener: listener, queue: queue) {
+                if let started = await NwTcpListener.start(listenerBox: UncheckedBox(listener), queue: queue) {
                     return started
                 }
             } catch {
@@ -129,6 +124,11 @@ public final class IosTransport: Transport, @unchecked Sendable {
         }
         return .unreachable
     }
+}
+
+private struct UncheckedBox<T>: @unchecked Sendable {
+    let value: T
+    init(_ value: T) { self.value = value }
 }
 
 private final class ConnectStateBox: @unchecked Sendable {
@@ -198,28 +198,28 @@ private actor NwTcpListener: TcpListener {
         self.queue = queue
     }
 
-    static func start(listener: NWListener, queue: DispatchQueue) async -> NwTcpListener? {
+    static func start(listenerBox: UncheckedBox<NWListener>, queue: DispatchQueue) async -> NwTcpListener? {
         let stateBox = ConnectStateBox()
         let boundPort: Int? = await withCheckedContinuation { continuation in
-            listener.stateUpdateHandler = { state in
+            listenerBox.value.stateUpdateHandler = { state in
                 switch state {
                 case .ready:
                     if stateBox.finish() {
-                        continuation.resume(returning: listener.port.map { Int($0.rawValue) })
+                        continuation.resume(returning: listenerBox.value.port.map { Int($0.rawValue) })
                     }
                 case .failed, .cancelled:
                     if stateBox.finish() {
-                        listener.cancel()
+                        listenerBox.value.cancel()
                         continuation.resume(returning: nil)
                     }
                 default:
                     break
                 }
             }
-            listener.start(queue: queue)
+            listenerBox.value.start(queue: queue)
         }
         guard let port = boundPort, port > 0 else { return nil }
-        let wrapper = NwTcpListener(listener: listener, port: port, queue: queue)
+        let wrapper = NwTcpListener(listener: listenerBox.value, port: port, queue: queue)
         await wrapper.attachAcceptHandler()
         return wrapper
     }
@@ -228,11 +228,15 @@ private actor NwTcpListener: TcpListener {
         let q = self.queue
         let listenPort = self.port
         listener.newConnectionHandler = { [weak self] nwConn in
+            guard let wrapper = self else {
+                nwConn.cancel()
+                return
+            }
             nwConn.start(queue: q)
             let remoteAddr = Self.extractRemote(nwConn)
             let localAddr = SocketAddr(ip: Ipv4(0, 0, 0, 0), port: listenPort)
             let tcp = NwTcpConn(connection: nwConn, local: localAddr, remote: remoteAddr)
-            Task { await self?.enqueue(tcp) }
+            Task { await wrapper.enqueue(tcp) }
         }
     }
 
