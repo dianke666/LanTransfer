@@ -1,7 +1,9 @@
+import CoreTransferable
+import Foundation
 import LanTransferDomain
 import LanTransferEngine
 import LanTransferProtocol
-import PhotosUI
+@preconcurrency import PhotosUI
 import SwiftUI
 import UIKit
 import UniformTypeIdentifiers
@@ -15,9 +17,14 @@ private struct StagedPhotoFile: Transferable, Sendable {
             let dst = FileManager.default.temporaryDirectory
                 .appendingPathComponent("\(UUID().uuidString)-\(received.file.lastPathComponent)")
             try FileManager.default.copyItem(at: received.file, to: dst)
-            return Self(url: dst)
+            return StagedPhotoFile(url: dst)
         }
     }
+}
+
+/// 隔离非 `Sendable` 的 `PhotosPickerItem`，避免在 Swift 6 严格并发下触发跨隔离域数据竞争报错。
+private struct PhotoItemBox: @unchecked Sendable {
+    let item: PhotosPickerItem
 }
 
 private enum ConversationTimelineItem: Identifiable {
@@ -182,13 +189,13 @@ public struct ConversationView: View {
         }
         .onChange(of: selectedPhotoItems) { _, items in
             guard !items.isEmpty else { return }
-            let picked = items
+            let boxes = items.map(PhotoItemBox.init)
             selectedPhotoItems = []
             Task {
                 var urls: [URL] = []
-                for item in picked {
-                    if let staged = try? await item.loadTransferable(type: StagedPhotoFile.self) {
-                        urls.append(staged.url)
+                for box in boxes {
+                    if let url = await Self.loadStagedPhotoURL(from: box) {
+                        urls.append(url)
                     }
                 }
                 if !urls.isEmpty {
@@ -319,9 +326,8 @@ public struct ConversationView: View {
                     background: task.direction == .send ? palette.accentSoft : palette.successSoft
                 )
                 Text("\(UiText.labelFileCount(count: task.files.count)) · \(SizeFormatter.format(totalBytes))")
-                    .font(.subheadline.weight(.semibold))
+                    .font(.subheadline.weight(.semibold).monospacedDigit())
                     .foregroundStyle(palette.textPrimary)
-                    .monospacedDigit()
                 Spacer()
                 Text(UiTextMapper.taskState(task.state, direction: task.direction, interrupt: task.interrupt))
                     .font(.caption.weight(.semibold))
@@ -563,5 +569,9 @@ public struct ConversationView: View {
             .padding(.vertical, 6)
             .background(Capsule().fill(palette.surface))
             .overlay(Capsule().strokeBorder(palette.border, lineWidth: 1))
+    }
+
+    private nonisolated static func loadStagedPhotoURL(from box: PhotoItemBox) async -> URL? {
+        (try? await box.item.loadTransferable(type: StagedPhotoFile.self))?.url
     }
 }

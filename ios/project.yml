@@ -96,6 +96,12 @@ targets:
     dependencies:
       - target: LanTransferApp
       - package: LanTransferCore
+        product: LanTransferProtocol
+      - package: LanTransferCore
+        product: LanTransferDomain
+      - package: LanTransferCore
+        product: LanTransferEngine
+      - package: LanTransferCore
         product: LanTransferTesting
     settings:
       base:

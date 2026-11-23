@@ -245,7 +245,7 @@ public struct QrScanView: View {
                             .foregroundStyle(.white)
                             .padding(.horizontal, 24)
                             .padding(.vertical, 12)
-                            .background(Capsule().fill(.ultraThinMaterial))
+                            .background(.ultraThinMaterial, in: Capsule())
                     }
                     .padding(.bottom, 28)
                 }
@@ -309,6 +309,14 @@ public struct QrScanView: View {
 private final class CameraSessionBox: @unchecked Sendable {
     let session = AVCaptureSession()
     private let queue = DispatchQueue(label: "com.lantransfer.qr.camera")
+
+    @MainActor
+    func makePreviewLayer(frame: CGRect) -> AVCaptureVideoPreviewLayer {
+        let layer = AVCaptureVideoPreviewLayer(session: session)
+        layer.videoGravity = .resizeAspectFill
+        layer.frame = frame
+        return layer
+    }
 
     func start(delegate: any AVCaptureMetadataOutputObjectsDelegate & Sendable) {
         queue.async {
@@ -380,7 +388,7 @@ private struct QrCameraPreview: UIViewRepresentable {
     }
 
     @MainActor
-    final class Coordinator: NSObject, AVCaptureMetadataOutputObjectsDelegate {
+    final class Coordinator: NSObject, AVCaptureMetadataOutputObjectsDelegate, @unchecked Sendable {
         private let onDetected: (String) -> Void
         private let sessionBox = CameraSessionBox()
 
@@ -389,9 +397,7 @@ private struct QrCameraPreview: UIViewRepresentable {
         }
 
         func startSession(in view: CameraContainerView) {
-            let layer = AVCaptureVideoPreviewLayer(session: sessionBox.session)
-            layer.videoGravity = .resizeAspectFill
-            layer.frame = view.bounds
+            let layer = sessionBox.makePreviewLayer(frame: view.bounds)
             view.layer.addSublayer(layer)
             view.previewLayer = layer
             sessionBox.start(delegate: self)
